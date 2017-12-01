@@ -210,10 +210,6 @@ that mimics an iterable (e.g. it has `map()` and `forEach()` and `length`), and
 dependent on you having subscribed to them** with the
 [`subscription` prop](#subscription-fieldsubscription)
 
-#### `fields.name: string`
-
-The name of the field array.
-
 #### `fields.forEach: (iterator: (name: string, index: number) => void) => void`
 
 Iterates through all of the names of the fields in the field array in bracket
