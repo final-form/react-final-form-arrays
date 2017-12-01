@@ -25,7 +25,7 @@ yarn add react-final-form-arrays react-final-form final-form final-form-arrays
 🏁 React Final Form Arrays provides a way to render arrays in 🏁 React Final
 Form.
 
-```js
+```jsx
 import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
 import { FieldArray } from 'react-final-form-arrays'
@@ -80,6 +80,47 @@ const MyForm = () => (
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+* [Examples](#examples)
+  * [Simple Example](#simple-example)
+* [Rendering](#rendering)
+* [API](#api)
+  * [`FieldArray : React.ComponentType<FieldArrayProps>`](#fieldarray--reactcomponenttypefieldarrayprops)
+  * [`version: string`](#version-string)
+* [Types](#types)
+  * [`FieldArrayProps`](#fieldarrayprops)
+    * [`children?: ((props: FieldArrayRenderProps) => React.Node) | React.Node`](#children-props-fieldarrayrenderprops--reactnode--reactnode)
+    * [`component?: React.ComponentType<FieldArrayRenderProps>`](#component-reactcomponenttypefieldarrayrenderprops)
+    * [`name: string`](#name-string)
+    * [`render?: (props: FieldArrayRenderProps) => React.Node`](#render-props-fieldarrayrenderprops--reactnode)
+    * [`subscription?: FieldSubscription`](#subscription-fieldsubscription)
+    * [`validate?: (value: ?any[], allValues: Object) => ?any`](#validate-value-any-allvalues-object--any)
+  * [`FieldArrayRenderProps`](#fieldarrayrenderprops)
+    * [`input.name: string`](#inputname-string)
+    * [`fields.forEach: (iterator: (name: string, index: number) => void) => void`](#fieldsforeach-iterator-name-string-index-number--void--void)
+    * [`fields.insert: (index: number, value: any) => void`](#fieldsinsert-index-number-value-any--void)
+    * [`fields.map: (iterator: (name: string, index: number) => any) => any[]`](#fieldsmap-iterator-name-string-index-number--any--any)
+    * [`fields.move: (from: number, to: number) => void`](#fieldsmove-from-number-to-number--void)
+    * [`fields.name: string`](#fieldsname-string)
+    * [`fields.pop: () => any`](#fieldspop---any)
+    * [`fields.push: (value: any) => void`](#fieldspush-value-any--void)
+    * [`fields.remove: (index: number) => any`](#fieldsremove-index-number--any)
+    * [`fields.shift: () => any`](#fieldsshift---any)
+    * [`fields.swap: (indexA: number, indexB: number) => void`](#fieldsswap-indexa-number-indexb-number--void)
+    * [`fields.unshift: (value: any) => void`](#fieldsunshift-value-any--void)
+    * [`meta.active?: boolean`](#metaactive-boolean)
+    * [`meta.data: Object`](#metadata-object)
+    * [`meta.dirty?: boolean`](#metadirty-boolean)
+    * [`meta.error?: any`](#metaerror-any)
+    * [`meta.initial?: any`](#metainitial-any)
+    * [`meta.invalid?: boolean`](#metainvalid-boolean)
+    * [`meta.pristine?: boolean`](#metapristine-boolean)
+    * [`meta.submitError?: any`](#metasubmiterror-any)
+    * [`meta.submitFailed?: boolean`](#metasubmitfailed-boolean)
+    * [`meta.submitSucceeded?: boolean`](#metasubmitsucceeded-boolean)
+    * [`meta.touched?: boolean`](#metatouched-boolean)
+    * [`meta.valid?: boolean`](#metavalid-boolean)
+    * [`meta.visited?: boolean`](#metavisited-boolean)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
