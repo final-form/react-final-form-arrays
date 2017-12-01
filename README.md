@@ -96,12 +96,12 @@ const MyForm = () => (
     * [`subscription?: FieldSubscription`](#subscription-fieldsubscription)
     * [`validate?: (value: ?any[], allValues: Object) => ?any`](#validate-value-any-allvalues-object--any)
   * [`FieldArrayRenderProps`](#fieldarrayrenderprops)
-    * [`input.name: string`](#inputname-string)
+    * [`fields.name: string`](#fieldsname-string)
     * [`fields.forEach: (iterator: (name: string, index: number) => void) => void`](#fieldsforeach-iterator-name-string-index-number--void--void)
     * [`fields.insert: (index: number, value: any) => void`](#fieldsinsert-index-number-value-any--void)
     * [`fields.map: (iterator: (name: string, index: number) => any) => any[]`](#fieldsmap-iterator-name-string-index-number--any--any)
     * [`fields.move: (from: number, to: number) => void`](#fieldsmove-from-number-to-number--void)
-    * [`fields.name: string`](#fieldsname-string)
+    * [`fields.name: string`](#fieldsname-string-1)
     * [`fields.pop: () => any`](#fieldspop---any)
     * [`fields.push: (value: any) => void`](#fieldspush-value-any--void)
     * [`fields.remove: (index: number) => any`](#fieldsremove-index-number--any)
@@ -210,9 +210,9 @@ that mimics an iterable (e.g. it has `map()` and `forEach()` and `length`), and
 dependent on you having subscribed to them** with the
 [`subscription` prop](#subscription-fieldsubscription)
 
-#### `input.name: string`
+#### `fields.name: string`
 
-The name of the field.
+The name of the field array.
 
 #### `fields.forEach: (iterator: (name: string, index: number) => void) => void`
 
