@@ -1,0 +1,46 @@
+// @flow
+import * as React from 'react'
+import type { FieldSubscription, FieldState } from 'final-form'
+
+export type FieldArrayRenderProps = {
+  fields: {
+    forEach: (iterator: (name: string, index: number) => void) => void,
+    insert: (index: number, value: any) => void,
+    map: (iterator: (name: string, index: number) => any) => any[],
+    move: (from: number, to: number) => void,
+    name: string,
+    pop: () => any,
+    push: (value: any) => void,
+    remove: (index: number) => any,
+    shift: () => any,
+    swap: (indexA: number, indexB: number) => void,
+    unshift: (value: any) => void
+  } & FieldState,
+  meta: $Shape<{
+    // TODO: Make a diff of `FieldState` without all the functions
+    active: boolean,
+    dirty: boolean,
+    error: boolean,
+    initial: boolean,
+    invalid: boolean,
+    pristine: boolean,
+    submitError: boolean,
+    submitFailed: boolean,
+    submitSucceeded: boolean,
+    touched: boolean,
+    valid: boolean,
+    visited: boolean
+  }>
+}
+
+export type RenderableProps<T> = $Shape<{
+  children: ((props: T) => React.Node) | React.Node,
+  component: React.ComponentType<*>,
+  render: (props: T) => React.Node
+}>
+
+export type FieldArrayProps = {
+  name: string,
+  subscription?: FieldSubscription,
+  validate?: (value: ?(any[]), allValues: Object) => ?any
+} & RenderableProps<FieldArrayRenderProps>

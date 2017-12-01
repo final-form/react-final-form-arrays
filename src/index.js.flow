@@ -1,0 +1,6 @@
+// @flow
+import * as React from 'react'
+import type { FieldArrayProps } from './types'
+
+declare export var FieldArray: React.ComponentType<FieldArrayProps>
+declare export var version: string
