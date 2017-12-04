@@ -67,7 +67,6 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     const { reactFinalForm } = this.context
     if (reactFinalForm) {
       const { mutators } = reactFinalForm
-      console.info('mutators', mutators)
       warning(
         mutators && mutators.push && mutators.pop,
         'Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
