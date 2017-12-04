@@ -125,10 +125,10 @@ const MyForm = () => (
 
 ## Examples
 
-### [Simple Example](https://codesandbox.io/s/ww40y2m595)
+### [Simple Example](https://codesandbox.io/s/kx8qv67nk5)
 
-Uses the built-in React inputs: `input`, `select`, and `textarea` to build a
-form with no validation.
+Demostrates how to use `<FieldArray/>` to render an array of inputs, as well as
+use `push`, `pop`, and `remove` mutations.
 
 ## Rendering
 
