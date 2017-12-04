@@ -1,6 +1,6 @@
 <!--
 
-👋 Hey, thanks for taking an interest in 🏁 React Final Form!
+👋 Hey, thanks for taking an interest in 🏁 React Final Form Arrays!
 
 -->
 
@@ -20,7 +20,7 @@
 
 ### What's your environment?
 
-<!-- Include 🏁 React Final Form version, 🏁 Final Form version, OS/browser affected, Node version, etc. -->
+<!-- Include 🏁 React Final Form Arrays version, 🏁 Final Form Arrays version, 🏁 Final Form version, OS/browser affected, Node version, etc. -->
 
 ### Other information
 
