@@ -2,13 +2,14 @@
 import * as React from 'react'
 import warning from './warning'
 import PropTypes from 'prop-types'
-import { fieldSubscriptionItems } from 'final-form'
+import { fieldSubscriptionItems, version as ffVersion } from 'final-form'
 import type { ReactContext } from 'react-final-form'
 import diffSubscription from './diffSubscription'
 import type { FieldSubscription, FieldState } from 'final-form'
 import type { Mutators } from 'final-form-arrays'
 import type { FieldArrayProps as Props } from './types'
 import renderComponent from './renderComponent'
+import { version } from './index'
 
 const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
@@ -25,6 +26,8 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   state: State
   mutators: Mutators
   unsubscribe: () => void
+
+  static displayName = `ReactFinalFormFieldArray(${ffVersion})(${version})`
 
   constructor(props: Props, context: ReactContext) {
     super(props, context)
