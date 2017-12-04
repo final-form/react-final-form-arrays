@@ -1,6 +1,6 @@
 <!--
 
-👋 Hey, thanks for your interest in contributing to 🏁 React Final Form!
+👋 Hey, thanks for your interest in contributing to 🏁 React Final Form Arrays!
 
 **Please ask first before starting work on any significant new features.**
 
@@ -21,6 +21,6 @@ Please format the code before submitting your pull request by running:
 npm run precommit
 ```
 
-https://github.com/erikras/react-final-form/blob/master/.github/CONTRIBUTING.md
+https://github.com/erikras/react-final-form-arrays/blob/master/.github/CONTRIBUTING.md
 
 -->
