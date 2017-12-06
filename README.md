@@ -2,7 +2,7 @@
 
 [![NPM Version](https://img.shields.io/npm/v/react-final-form-arrays.svg?style=flat)](https://www.npmjs.com/package/react-final-form-arrays)
 [![NPM Downloads](https://img.shields.io/npm/dm/react-final-form-arrays.svg?style=flat)](https://www.npmjs.com/package/react-final-form-arrays)
-[![Build Status](https://img.shields.io/travis/final-form/react-final-form-arrays/v6.svg?style=flat)](https://travis-ci.org/final-form/react-final-form-arrays)
+[![Build Status](https://travis-ci.org/final-form/react-final-form-arrays.svg?branch=master)](https://travis-ci.org/final-form/react-final-form-arrays)
 [![codecov.io](https://codecov.io/gh/final-form/react-final-form-arrays/branch/master/graph/badge.svg)](https://codecov.io/gh/final-form/react-final-form-arrays)
 [![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 
