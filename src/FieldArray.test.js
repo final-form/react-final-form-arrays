@@ -5,6 +5,7 @@ import arrayMutators from 'final-form-arrays'
 import FieldArray from './FieldArray'
 
 const onSubmitMock = values => {}
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('FieldArray', () => {
   it('should warn error if not used inside a form', () => {
@@ -42,7 +43,7 @@ describe('FieldArray', () => {
     expect(MyComp).toHaveBeenCalledTimes(1)
   })
 
-  it('should resubscribe if name changes', () => {
+  it('should resubscribe if name changes', async () => {
     const renderArray = jest.fn(() => <div />)
     class Container extends React.Component {
       state = { name: 'dogs' }
@@ -77,9 +78,10 @@ describe('FieldArray', () => {
 
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
+    await sleep(2)
 
-    expect(renderArray).toHaveBeenCalledTimes(2)
-    expect(renderArray.mock.calls[1][0].value).toEqual(['Garfield'])
+    expect(renderArray).toHaveBeenCalledTimes(4)
+    expect(renderArray.mock.calls[3][0].value).toEqual(['Garfield'])
   })
 
   it('should not resubscribe if name changes when not inside a <Form> (duh)', () => {
@@ -189,7 +191,7 @@ describe('FieldArray', () => {
     TestUtils.Simulate.click(button)
   })
 
-  it('should allow field-level validation', () => {
+  it('should allow field-level validation', async () => {
     const renderArray = jest.fn(() => <div />)
     const render = jest.fn(() => (
       <form>
@@ -219,6 +221,7 @@ describe('FieldArray', () => {
     expect(typeof renderArray.mock.calls[0][0].fields.push).toBe('function')
 
     renderArray.mock.calls[0][0].fields.push('c')
+    await sleep(2)
 
     expect(renderArray).toHaveBeenCalledTimes(3)
     expect(renderArray.mock.calls[2][0].meta.valid).toBe(false)
@@ -289,7 +292,7 @@ describe('FieldArray', () => {
     expect(result).toEqual(['FOO[0]', 'FOO[1]', 'FOO[2]'])
   })
 
-  it('should allow Fields to be rendered', () => {
+  it('should allow Field components to be rendered', async () => {
     const renderInput = jest.fn(({ input }) => <input {...input} />)
     const dom = TestUtils.renderIntoDocument(
       <Form
@@ -318,6 +321,7 @@ describe('FieldArray', () => {
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
 
+    await sleep(2)
     expect(renderInput).toHaveBeenCalled()
     expect(renderInput).toHaveBeenCalledTimes(1)
     expect(renderInput.mock.calls[0][0].input.name).toBe('foo[0]')
@@ -329,6 +333,7 @@ describe('FieldArray', () => {
     expect(renderInput.mock.calls[1][0].input.value).toBe('dog')
 
     TestUtils.Simulate.click(button)
+    await sleep(2)
 
     // notice it doesn't NEED to be called for foo[0] because that field hasn't changed!
     expect(renderInput).toHaveBeenCalledTimes(3)
@@ -336,7 +341,7 @@ describe('FieldArray', () => {
     expect(renderInput.mock.calls[2][0].input.value).toBe('')
   })
 
-  it('should allow Fields to be rendered for complex objects', () => {
+  it('should allow Fields to be rendered for complex objects', async () => {
     const renderFirstNameInput = jest.fn(({ input }) => <input {...input} />)
     const renderLastNameInput = jest.fn(({ input }) => <input {...input} />)
     const dom = TestUtils.renderIntoDocument(
@@ -375,6 +380,7 @@ describe('FieldArray', () => {
 
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
+    await sleep(2)
 
     expect(renderFirstNameInput).toHaveBeenCalled()
     expect(renderFirstNameInput).toHaveBeenCalledTimes(1)
@@ -399,6 +405,7 @@ describe('FieldArray', () => {
     expect(renderLastNameInput).toHaveBeenCalledTimes(1)
 
     TestUtils.Simulate.click(button)
+    await sleep(2)
 
     // notice it doesn't NEED to be called for foo[0] because that field hasn't changed!
     expect(renderFirstNameInput).toHaveBeenCalledTimes(3)

@@ -83,7 +83,9 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   validate = (value: ?any, allValues: Object) =>
     this.props.validate && this.props.validate(value, allValues)
 
-  notify = (state: FieldState) => this.setState({ state })
+  notify = (state: FieldState) => {
+    setTimeout(() => this.setState({ state }))
+  }
 
   forEach = (iterator: (name: string, index: number) => void): void => {
     const { name } = this.props
