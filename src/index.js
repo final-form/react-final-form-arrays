@@ -1,4 +1,4 @@
 // @flow
 export { default as FieldArray } from './FieldArray'
 
-export const version = '0.0.1'
+export const version = '1.0.1'
