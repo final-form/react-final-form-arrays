@@ -6,6 +6,7 @@
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
   "module": "dist/react-final-form-arrays.es.js",
+  "typings": "dist/index.d.js",
   "files": ["dist"],
   "scripts": {
     "start": "nps",
@@ -24,6 +25,7 @@
   },
   "homepage": "https://github.com/final-form/react-final-form-arrays#readme",
   "devDependencies": {
+    "@types/react": "^16.0.31",
     "babel-eslint": "^8.0.2",
     "babel-jest": "^21.2.0",
     "babel-plugin-external-helpers": "^6.22.0",
