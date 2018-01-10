@@ -193,12 +193,12 @@ describe('FieldArray', () => {
 
   it('should allow field-level validation', async () => {
     const renderArray = jest.fn(() => <div />)
+    const validate = jest.fn(
+      value => (value.length > 2 ? 'Too long' : undefined)
+    )
     const render = jest.fn(() => (
       <form>
-        <FieldArray
-          name="foo"
-          validate={value => (value.length > 2 ? 'Too long' : undefined)}
-        >
+        <FieldArray name="foo" validate={validate}>
           {renderArray}
         </FieldArray>
       </form>
@@ -217,15 +217,16 @@ describe('FieldArray', () => {
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
     expect(renderArray.mock.calls[0][0].meta.valid).toBe(true)
+    expect(validate).toHaveBeenCalled()
 
     expect(typeof renderArray.mock.calls[0][0].fields.push).toBe('function')
 
     renderArray.mock.calls[0][0].fields.push('c')
     await sleep(2)
 
-    expect(renderArray).toHaveBeenCalledTimes(3)
-    expect(renderArray.mock.calls[2][0].meta.valid).toBe(false)
-    expect(renderArray.mock.calls[2][0].meta.error).toBe('Too long')
+    expect(renderArray).toHaveBeenCalledTimes(2)
+    expect(renderArray.mock.calls[1][0].meta.valid).toBe(false)
+    expect(renderArray.mock.calls[1][0].meta.error).toBe('Too long')
   })
 
   it('should provide forEach', () => {

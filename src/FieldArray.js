@@ -59,7 +59,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
       name,
       listener,
       subscription ? { ...subscription, length: true } : all,
-      this.validate
+      { validate: this.validate }
     )
   }
 
