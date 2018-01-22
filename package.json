@@ -5,7 +5,7 @@
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
   "module": "dist/react-final-form-arrays.es.js",
-  "typings": "dist/index.d.js",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist"
   ],
