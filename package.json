@@ -1,20 +1,20 @@
 {
   "name": "react-final-form-arrays",
   "version": "1.0.2",
-  "description":
-    "A component for rendering and editing arrays 🏁 React Final Form",
+  "description": "A component for rendering and editing arrays 🏁 React Final Form",
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
   "module": "dist/react-final-form-arrays.es.js",
   "typings": "dist/index.d.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "nps",
     "test": "nps test",
     "precommit": "lint-staged && npm start validate"
   },
-  "author":
-    "Erik Rasmussen <rasmussenerik@gmail.com> (http://github.com/erikras)",
+  "author": "Erik Rasmussen <rasmussenerik@gmail.com> (http://github.com/erikras)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -42,7 +42,7 @@
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
-    "final-form": "^2.0.0",
+    "final-form": "^4.0.3",
     "final-form-arrays": "^1.0.3",
     "flow": "^0.2.3",
     "flow-bin": "^0.61.0",
@@ -57,14 +57,15 @@
     "raf": "^3.4.0",
     "react": "^16.1.0",
     "react-dom": "^16.1.0",
-    "react-final-form": "^1.1.0",
+    "react-final-form": "^3.0.4",
     "rollup": "^0.52.0",
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-flow": "^1.1.1",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-replace": "^2.0.0",
-    "rollup-plugin-uglify": "^2.0.1"
+    "rollup-plugin-uglify": "^2.0.1",
+    "typescript": "^2.6.2"
   },
   "peerDependencies": {
     "final-form": ">=2.0.0",
@@ -73,10 +74,15 @@
     "react": "^15.3.0 || ^16.0.0-0"
   },
   "jest": {
-    "setupFiles": ["raf/polyfill"]
+    "setupFiles": [
+      "raf/polyfill"
+    ]
   },
   "lint-staged": {
-    "*.{js*,ts,json,md,css}": ["prettier --write", "git add"]
+    "*.{js*,ts*,json,md,css}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "bundlesize": [
     {
