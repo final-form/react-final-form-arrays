@@ -132,7 +132,40 @@ export default class FieldArray extends React.PureComponent<Props, State> {
 
   render() {
     const { name, ...rest } = this.props
-    let { value, length, ...meta } = this.state.state
+    let {
+      length,
+      active,
+      dirty,
+      error,
+      initial,
+      invalid,
+      pristine,
+      submitError,
+      submitFailed,
+      submitSucceeded,
+      touched,
+      valid,
+      visited,
+      ...fieldStateFunctions
+    } = this.state.state
+    const meta = {
+      active,
+      dirty,
+      error,
+      initial,
+      invalid,
+      pristine,
+      submitError,
+      submitFailed,
+      submitSucceeded,
+      touched,
+      valid,
+      visited
+    }
+    const fieldState = {
+      ...meta,
+      ...fieldStateFunctions
+    }
     return renderComponent(
       {
         fields: {
@@ -140,10 +173,10 @@ export default class FieldArray extends React.PureComponent<Props, State> {
           forEach: this.forEach,
           length,
           map: this.map,
-          ...this.mutators
+          ...this.mutators,
+          ...fieldState
         },
         meta,
-        value,
         ...rest
       },
       `FieldArray(${name})`
