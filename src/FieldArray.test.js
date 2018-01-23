@@ -74,14 +74,14 @@ describe('FieldArray', () => {
     const dom = TestUtils.renderIntoDocument(<Container />)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
-    expect(renderArray.mock.calls[0][0].value).toEqual(['Odie'])
+    expect(renderArray.mock.calls[0][0].fields.value).toEqual(['Odie'])
 
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
     await sleep(2)
 
     expect(renderArray).toHaveBeenCalledTimes(4)
-    expect(renderArray.mock.calls[3][0].value).toEqual(['Garfield'])
+    expect(renderArray.mock.calls[3][0].fields.value).toEqual(['Garfield'])
   })
 
   it('should not resubscribe if name changes when not inside a <Form> (duh)', () => {
