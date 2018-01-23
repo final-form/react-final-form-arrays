@@ -81,7 +81,7 @@ describe('FieldArray', () => {
     await sleep(2)
 
     expect(renderArray).toHaveBeenCalledTimes(4)
-    expect(renderArray.mock.calls[3][0].value).toEqual(['Garfield'])
+    expect(renderArray.mock.calls[3][0].fields.value).toEqual(['Garfield'])
   })
 
   it('should not resubscribe if name changes when not inside a <Form> (duh)', () => {
