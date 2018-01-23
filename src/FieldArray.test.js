@@ -74,7 +74,7 @@ describe('FieldArray', () => {
     const dom = TestUtils.renderIntoDocument(<Container />)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
-    expect(renderArray.mock.calls[0][0].value).toEqual(['Odie'])
+    expect(renderArray.mock.calls[0][0].fields.value).toEqual(['Odie'])
 
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
