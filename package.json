@@ -1,20 +1,20 @@
 {
   "name": "react-final-form-arrays",
-  "version": "1.0.2",
-  "description": "A component for rendering and editing arrays 🏁 React Final Form",
+  "version": "1.0.3",
+  "description":
+    "A component for rendering and editing arrays 🏁 React Final Form",
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
   "module": "dist/react-final-form-arrays.es.js",
   "typings": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "start": "nps",
     "test": "nps test",
     "precommit": "lint-staged && npm start validate"
   },
-  "author": "Erik Rasmussen <rasmussenerik@gmail.com> (http://github.com/erikras)",
+  "author":
+    "Erik Rasmussen <rasmussenerik@gmail.com> (http://github.com/erikras)",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -73,15 +73,10 @@
     "react": "^15.3.0 || ^16.0.0-0"
   },
   "jest": {
-    "setupFiles": [
-      "raf/polyfill"
-    ]
+    "setupFiles": ["raf/polyfill"]
   },
   "lint-staged": {
-    "*.{js*,ts*,json,md,css}": [
-      "prettier --write",
-      "git add"
-    ]
+    "*.{js*,ts*,json,md,css}": ["prettier --write", "git add"]
   },
   "bundlesize": [
     {
