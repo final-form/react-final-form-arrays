@@ -59,7 +59,9 @@ export default class FieldArray extends React.PureComponent<Props, State> {
       name,
       listener,
       subscription ? { ...subscription, length: true } : all,
-      { validate: this.validate }
+      {
+        getValidator: () => this.props.validate
+      }
     )
   }
 
@@ -79,9 +81,6 @@ export default class FieldArray extends React.PureComponent<Props, State> {
       }
     }
   }
-
-  validate = (value: ?any, allValues: Object) =>
-    this.props.validate && this.props.validate(value, allValues)
 
   notify = (state: FieldState) => {
     setTimeout(() => this.setState({ state }))
