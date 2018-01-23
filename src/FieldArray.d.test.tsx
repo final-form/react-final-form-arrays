@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Form, Field } from 'react-final-form'
-import * as arrayMutators from 'final-form-arrays'
+import arrayMutators from 'final-form-arrays'
 import { FieldArray } from './index'
 
 const onSubmit = async (values: any) => {
