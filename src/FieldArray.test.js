@@ -129,7 +129,7 @@ describe('FieldArray', () => {
       <Form onSubmit={onSubmitMock} render={render} />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(1)
+    expect(render).toHaveBeenCalledTimes(2)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
   })
@@ -152,13 +152,13 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(1)
+    expect(render).toHaveBeenCalledTimes(2)
     expect(renderArray).toHaveBeenCalled()
-    expect(renderArray).toHaveBeenCalledTimes(1)
-    expect(renderArray.mock.calls[0][0].meta.dirty).not.toBeUndefined()
-    expect(renderArray.mock.calls[0][0].meta.dirty).toBe(false)
-    expect(renderArray.mock.calls[0][0].fields.length).not.toBeUndefined()
-    expect(renderArray.mock.calls[0][0].fields.length).toBe(2)
+    expect(renderArray).toHaveBeenCalledTimes(2)
+    expect(renderArray.mock.calls[1][0].meta.dirty).not.toBeUndefined()
+    expect(renderArray.mock.calls[1][0].meta.dirty).toBe(false)
+    expect(renderArray.mock.calls[1][0].fields.length).not.toBeUndefined()
+    expect(renderArray.mock.calls[1][0].fields.length).toBe(2)
   })
 
   it('should unsubscribe on unmount', () => {
@@ -168,7 +168,7 @@ describe('FieldArray', () => {
 
       render() {
         return (
-          <Form onSubmit={onSubmitMock}>
+          <Form onSubmit={onSubmitMock} mutators={arrayMutators}>
             {() => (
               <form>
                 {this.state.shown && (
@@ -213,7 +213,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(1)
+    expect(render).toHaveBeenCalledTimes(2)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
     expect(renderArray.mock.calls[0][0].meta.valid).toBe(true)
@@ -246,7 +246,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(1)
+    expect(render).toHaveBeenCalledTimes(2)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
 
@@ -278,7 +278,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(1)
+    expect(render).toHaveBeenCalledTimes(2)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
 
@@ -419,5 +419,66 @@ describe('FieldArray', () => {
       'foo[1].lastName'
     )
     expect(renderLastNameInput.mock.calls[1][0].input.value).toBe('')
+  })
+
+  it('should not warn if updating state after unmounting', async () => {
+    // This is mainly here for code coverage. 🧐
+    class Container extends React.Component {
+      state = { shown: true }
+
+      render() {
+        return (
+          <Form
+            onSubmit={onSubmitMock}
+            mutators={arrayMutators}
+            initialValues={{ foo: [] }}
+          >
+            {() => (
+              <form>
+                {this.state.shown && (
+                  <FieldArray
+                    name="foo"
+                    render={({ fields, meta }) => (
+                      <div>
+                        {fields.map((name, index) => (
+                          <Field
+                            key={index}
+                            name={name + '.foo'}
+                            component="input"
+                          />
+                        ))}
+                        <b onClick={() => fields.push({ foo: '' })}>Add</b>
+                        {meta.error && <span>{meta.error}</span>}
+                      </div>
+                    )}
+                    validate={values => {
+                      if (!values.length) {
+                        return 'Required'
+                      }
+                    }}
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => this.setState({ shown: false })}
+                >
+                  Unmount
+                </button>
+              </form>
+            )}
+          </Form>
+        )
+      }
+    }
+
+    const spy = jest.spyOn(console, 'error')
+    const dom = TestUtils.renderIntoDocument(<Container />)
+    const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
+    const addButton = TestUtils.findRenderedDOMComponentWithTag(dom, 'b')
+
+    TestUtils.Simulate.click(addButton)
+    TestUtils.Simulate.click(button)
+    await sleep(2)
+    expect(spy).not.toHaveBeenCalled()
   })
 })

@@ -25,6 +25,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   props: Props
   state: State
   mutators: Mutators
+  mounted: boolean
   unsubscribe: () => void
 
   static displayName = `ReactFinalFormFieldArray(${ffVersion})(${version})`
@@ -49,6 +50,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     }
     this.state = { state: initialState || {} }
     this.bindMutators(props)
+    this.mounted = false
   }
 
   subscribe = (
@@ -69,11 +71,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     const { reactFinalForm } = this.context
     if (reactFinalForm) {
       const { mutators } = reactFinalForm
+      const hasMutators = !!(mutators && mutators.push && mutators.pop)
       warning(
-        mutators && mutators.push && mutators.pop,
+        hasMutators,
         'Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
       )
-      if (mutators) {
+      if (hasMutators) {
         this.mutators = Object.keys(mutators).reduce((result, key) => {
           result[key] = (...args) => mutators[key](name, ...args)
           return result
@@ -83,7 +86,11 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   }
 
   notify = (state: FieldState) => {
-    setTimeout(() => this.setState({ state }))
+    setTimeout(() => {
+      if (this.mounted) {
+        this.setState({ state })
+      }
+    })
   }
 
   forEach = (iterator: (name: string, index: number) => void): void => {
@@ -125,7 +132,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     }
   }
 
+  componentDidMount() {
+    this.mounted = true
+  }
+
   componentWillUnmount() {
+    this.mounted = false
     this.unsubscribe()
   }
 

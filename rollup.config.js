@@ -33,20 +33,23 @@ if (es) {
 }
 
 // eslint-disable-next-line no-nested-ternary
-const exports = !es ? 'default' : 'named'
-
 export default {
   name: 'react-final-form-arrays',
   input: 'src/index.js',
-  output,
-  exports,
+  output: Object.assign(
+    {
+      name: 'react-final-form-arrays',
+      exports: 'named',
+      globals: {
+        react: 'React',
+        'prop-types': 'PropTypes',
+        'final-form': 'FinalForm',
+        'react-final-form': 'ReactFinalForm'
+      }
+    },
+    output
+  ),
   external: ['react', 'prop-types', 'final-form', 'react-final-form'],
-  globals: {
-    react: 'React',
-    'prop-types': 'PropTypes',
-    'final-form': 'FinalForm',
-    'react-final-form': 'ReactFinalForm'
-  },
   plugins: [
     resolve({ jsnext: true, main: true }),
     flow(),
