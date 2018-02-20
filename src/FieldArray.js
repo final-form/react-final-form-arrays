@@ -25,6 +25,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   props: Props
   state: State
   mutators: Mutators
+  mounted: boolean
   unsubscribe: () => void
 
   static displayName = `ReactFinalFormFieldArray(${ffVersion})(${version})`
@@ -49,6 +50,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     }
     this.state = { state: initialState || {} }
     this.bindMutators(props)
+    this.mounted = false
   }
 
   subscribe = (
@@ -83,7 +85,11 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   }
 
   notify = (state: FieldState) => {
-    setTimeout(() => this.setState({ state }))
+    setTimeout(() => {
+      if (this.mounted) {
+        this.setState({ state })
+      }
+    })
   }
 
   forEach = (iterator: (name: string, index: number) => void): void => {
@@ -125,7 +131,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     }
   }
 
+  componentDidMount() {
+    this.mounted = true
+  }
+
   componentWillUnmount() {
+    this.mounted = false
     this.unsubscribe()
   }
 
