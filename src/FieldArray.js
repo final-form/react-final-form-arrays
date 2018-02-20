@@ -71,11 +71,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     const { reactFinalForm } = this.context
     if (reactFinalForm) {
       const { mutators } = reactFinalForm
+      const hasMutators = !!(mutators && mutators.push && mutators.pop)
       warning(
-        mutators && mutators.push && mutators.pop,
+        hasMutators,
         'Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
       )
-      if (mutators) {
+      if (hasMutators) {
         this.mutators = Object.keys(mutators).reduce((result, key) => {
           result[key] = (...args) => mutators[key](name, ...args)
           return result
