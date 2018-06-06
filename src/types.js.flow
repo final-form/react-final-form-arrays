@@ -34,7 +34,7 @@ export type FieldArrayRenderProps = {
 }
 
 export type RenderableProps<T> = $Shape<{
-  children: ((props: T) => React.Node) | React.Node,
+  children: (props: T) => React.Node,
   component: React.ComponentType<*>,
   render: (props: T) => React.Node
 }>
@@ -42,5 +42,6 @@ export type RenderableProps<T> = $Shape<{
 export type FieldArrayProps = {
   name: string,
   subscription?: FieldSubscription,
+  isEqual?: (any, any) => boolean,
   validate?: (value: ?(any[]), allValues: Object) => ?any
 } & RenderableProps<FieldArrayRenderProps>

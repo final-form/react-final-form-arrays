@@ -2,7 +2,7 @@ import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
 import flow from 'rollup-plugin-flow'
 import commonjs from 'rollup-plugin-commonjs'
-import uglify from 'rollup-plugin-uglify'
+import { uglify } from 'rollup-plugin-uglify'
 import replace from 'rollup-plugin-replace'
 
 const minify = process.env.MINIFY
@@ -34,7 +34,6 @@ if (es) {
 
 // eslint-disable-next-line no-nested-ternary
 export default {
-  name: 'react-final-form-arrays',
   input: 'src/index.js',
   output: Object.assign(
     {
