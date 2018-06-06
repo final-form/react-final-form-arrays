@@ -9,12 +9,20 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('FieldArray', () => {
   it('should warn error if not used inside a form', () => {
+    const spy = jest.spyOn(global.console, 'error').mockImplementation(() => {})
     TestUtils.renderIntoDocument(
       <FieldArray name="foo" render={() => <div />} />
     )
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(
+      'Warning: FieldArray must be used inside of a ReactFinalForm component'
+    )
+    spy.mockRestore()
   })
 
   it('should warn if no render strategy is provided', () => {
+    const spy = jest.spyOn(global.console, 'error').mockImplementation(() => {})
     TestUtils.renderIntoDocument(
       <Form
         onSubmit={onSubmitMock}
@@ -22,14 +30,27 @@ describe('FieldArray', () => {
         render={() => <FieldArray name="foo" />}
       />
     )
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(
+      'Warning: Must specify either a render prop, a render function as children, or a component prop to FieldArray(foo)'
+    )
+    spy.mockRestore()
   })
 
   it('should warn if no array mutators provided', () => {
+    const spy = jest.spyOn(global.console, 'error').mockImplementation(() => {})
     TestUtils.renderIntoDocument(
       <Form onSubmit={onSubmitMock}>
         {() => <FieldArray name="foo" render={() => <div />} />}
       </Form>
     )
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledWith(
+      'Warning: Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
+    )
+    spy.mockRestore()
   })
 
   it('should render with a render component', () => {
@@ -53,6 +74,7 @@ describe('FieldArray', () => {
           <Form
             onSubmit={onSubmitMock}
             mutators={arrayMutators}
+            subscription={{}}
             initialValues={{ dogs: ['Odie'], cats: ['Garfield'] }}
           >
             {() => (
@@ -129,7 +151,7 @@ describe('FieldArray', () => {
       <Form onSubmit={onSubmitMock} render={render} />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(2)
+    expect(render).toHaveBeenCalledTimes(1)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
   })
@@ -152,13 +174,13 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(2)
+    expect(render).toHaveBeenCalledTimes(1)
     expect(renderArray).toHaveBeenCalled()
-    expect(renderArray).toHaveBeenCalledTimes(2)
-    expect(renderArray.mock.calls[1][0].meta.dirty).not.toBeUndefined()
-    expect(renderArray.mock.calls[1][0].meta.dirty).toBe(false)
-    expect(renderArray.mock.calls[1][0].fields.length).not.toBeUndefined()
-    expect(renderArray.mock.calls[1][0].fields.length).toBe(2)
+    expect(renderArray).toHaveBeenCalledTimes(1)
+    expect(renderArray.mock.calls[0][0].meta.dirty).not.toBeUndefined()
+    expect(renderArray.mock.calls[0][0].meta.dirty).toBe(false)
+    expect(renderArray.mock.calls[0][0].fields.length).not.toBeUndefined()
+    expect(renderArray.mock.calls[0][0].fields.length).toBe(2)
   })
 
   it('should unsubscribe on unmount', () => {
@@ -213,7 +235,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(2)
+    expect(render).toHaveBeenCalledTimes(1)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
     expect(renderArray.mock.calls[0][0].meta.valid).toBe(true)
@@ -246,7 +268,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(2)
+    expect(render).toHaveBeenCalledTimes(1)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
 
@@ -278,7 +300,7 @@ describe('FieldArray', () => {
       />
     )
     expect(render).toHaveBeenCalled()
-    expect(render).toHaveBeenCalledTimes(2)
+    expect(render).toHaveBeenCalledTimes(1)
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
 
@@ -299,9 +321,10 @@ describe('FieldArray', () => {
       <Form
         onSubmit={onSubmitMock}
         mutators={arrayMutators}
+        subscription={{}}
         render={() => (
           <form>
-            <FieldArray name="foo">
+            <FieldArray name="foo" subscription={{}}>
               {({ fields }) => (
                 <div>
                   {fields.map(name => (
@@ -336,10 +359,10 @@ describe('FieldArray', () => {
     TestUtils.Simulate.click(button)
     await sleep(2)
 
-    // notice it doesn't NEED to be called for foo[0] because that field hasn't changed!
-    expect(renderInput).toHaveBeenCalledTimes(3)
-    expect(renderInput.mock.calls[2][0].input.name).toBe('foo[1]')
-    expect(renderInput.mock.calls[2][0].input.value).toBe('')
+    // it must rerender foo[0] because the whole array is rerendered due to the change of length
+    expect(renderInput).toHaveBeenCalledTimes(4)
+    expect(renderInput.mock.calls[3][0].input.name).toBe('foo[1]')
+    expect(renderInput.mock.calls[3][0].input.value).toBe('')
   })
 
   it('should allow Fields to be rendered for complex objects', async () => {
@@ -349,9 +372,10 @@ describe('FieldArray', () => {
       <Form
         onSubmit={onSubmitMock}
         mutators={arrayMutators}
+        subscription={{}}
         render={() => (
           <form>
-            <FieldArray name="foo">
+            <FieldArray name="foo" subscription={{}}>
               {({ fields }) => (
                 <div>
                   {fields.map(name => (
@@ -408,17 +432,17 @@ describe('FieldArray', () => {
     TestUtils.Simulate.click(button)
     await sleep(2)
 
-    // notice it doesn't NEED to be called for foo[0] because that field hasn't changed!
-    expect(renderFirstNameInput).toHaveBeenCalledTimes(3)
-    expect(renderFirstNameInput.mock.calls[2][0].input.name).toBe(
+    // it must rerender foo[0] inputs because the whole array is rerendered due to the change of length
+    expect(renderFirstNameInput).toHaveBeenCalledTimes(4)
+    expect(renderFirstNameInput.mock.calls[3][0].input.name).toBe(
       'foo[1].firstName'
     )
-    expect(renderFirstNameInput.mock.calls[2][0].input.value).toBe('')
-    expect(renderLastNameInput).toHaveBeenCalledTimes(2)
-    expect(renderLastNameInput.mock.calls[1][0].input.name).toBe(
+    expect(renderFirstNameInput.mock.calls[3][0].input.value).toBe('')
+    expect(renderLastNameInput).toHaveBeenCalledTimes(3)
+    expect(renderLastNameInput.mock.calls[2][0].input.name).toBe(
       'foo[1].lastName'
     )
-    expect(renderLastNameInput.mock.calls[1][0].input.value).toBe('')
+    expect(renderLastNameInput.mock.calls[2][0].input.value).toBe('')
   })
 
   it('should not warn if updating state after unmounting', async () => {

@@ -1,15 +1,26 @@
 // @flow
 import * as React from 'react'
-import warning from './warning'
+import { polyfill } from 'react-lifecycles-compat'
 import PropTypes from 'prop-types'
-import { fieldSubscriptionItems, version as ffVersion } from 'final-form'
+import {
+  fieldSubscriptionItems,
+  version as ffVersion,
+  ARRAY_ERROR
+} from 'final-form'
+import { version as rffVersion } from 'react-final-form'
 import type { ReactContext } from 'react-final-form'
 import diffSubscription from './diffSubscription'
-import type { FieldSubscription, FieldState } from 'final-form'
+import type { FieldSubscription, FieldState, FieldValidator } from 'final-form'
 import type { Mutators } from 'final-form-arrays'
 import type { FieldArrayProps as Props } from './types'
 import renderComponent from './renderComponent'
-import { version } from './index'
+export const version = '1.0.4'
+
+const versions = {
+  'final-form': ffVersion,
+  'react-final-form': rffVersion,
+  'react-final-form-arrays': version
+}
 
 const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
@@ -17,10 +28,10 @@ const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
 }, {})
 
 type State = {
-  state: FieldState
+  state: ?FieldState
 }
 
-export default class FieldArray extends React.PureComponent<Props, State> {
+class FieldArray extends React.PureComponent<Props, State> {
   context: ReactContext
   props: Props
   state: State
@@ -33,10 +44,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
   constructor(props: Props, context: ReactContext) {
     super(props, context)
     let initialState
-    warning(
-      context.reactFinalForm,
-      'FieldArray must be used inside of a ReactFinalForm component'
-    )
+    // istanbul ignore next
+    if (process.env.NODE_ENV !== 'production' && !context.reactFinalForm) {
+      console.error(
+        'Warning: FieldArray must be used inside of a ReactFinalForm component'
+      )
+    }
     const { reactFinalForm } = this.context
     if (reactFinalForm) {
       // avoid error, warning will alert developer to their mistake
@@ -48,7 +61,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
         }
       })
     }
-    this.state = { state: initialState || {} }
+    this.state = { state: initialState }
     this.bindMutators(props)
     this.mounted = false
   }
@@ -62,9 +75,23 @@ export default class FieldArray extends React.PureComponent<Props, State> {
       listener,
       subscription ? { ...subscription, length: true } : all,
       {
-        getValidator: () => this.props.validate
+        getValidator: () => this.validate
       }
     )
+  }
+
+  validate: FieldValidator = (...args) => {
+    const { validate } = this.props
+    if (!validate) return undefined
+    const error = validate(...args)
+    if (!error || Array.isArray(error)) {
+      return error
+    } else {
+      const arrayError = []
+      // gross, but we have to set a string key on the array
+      ;((arrayError: any): Object)[ARRAY_ERROR] = error
+      return arrayError
+    }
   }
 
   bindMutators = ({ name }: Props) => {
@@ -72,10 +99,12 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     if (reactFinalForm) {
       const { mutators } = reactFinalForm
       const hasMutators = !!(mutators && mutators.push && mutators.pop)
-      warning(
-        hasMutators,
-        'Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
-      )
+      // istanbul ignore next
+      if (process.env.NODE_ENV !== 'production' && !hasMutators) {
+        console.error(
+          'Warning: Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
+        )
+      }
       if (hasMutators) {
         this.mutators = Object.keys(mutators).reduce((result, key) => {
           result[key] = (...args) => mutators[key](name, ...args)
@@ -95,7 +124,9 @@ export default class FieldArray extends React.PureComponent<Props, State> {
 
   forEach = (iterator: (name: string, index: number) => void): void => {
     const { name } = this.props
-    const { length } = this.state.state
+    // required || for Flow, but results in uncovered line in Jest/Istanbul
+    // istanbul ignore next
+    const length = this.state.state ? this.state.state.length || 0 : 0
     for (let i = 0; i < length; i++) {
       iterator(`${name}[${i}]`, i)
     }
@@ -103,7 +134,9 @@ export default class FieldArray extends React.PureComponent<Props, State> {
 
   map = (iterator: (name: string, index: number) => any): any[] => {
     const { name } = this.props
-    const { length } = this.state.state
+    // required || for Flow, but results in uncovered line in Jest/Istanbul
+    // istanbul ignore next
+    const length = this.state.state ? this.state.state.length || 0 : 0
     const results: any[] = []
     for (let i = 0; i < length; i++) {
       results.push(iterator(`${name}[${i}]`, i))
@@ -111,7 +144,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
     return results
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     const { name, subscription } = nextProps
     if (
       this.props.name !== name ||
@@ -158,7 +191,8 @@ export default class FieldArray extends React.PureComponent<Props, State> {
       valid,
       visited,
       ...fieldStateFunctions
-    } = this.state.state
+    } =
+      this.state.state || {}
     const meta = {
       active,
       dirty,
@@ -188,7 +222,8 @@ export default class FieldArray extends React.PureComponent<Props, State> {
           ...fieldState
         },
         meta,
-        ...rest
+        ...rest,
+        __versions: versions
       },
       `FieldArray(${name})`
     )
@@ -198,3 +233,7 @@ export default class FieldArray extends React.PureComponent<Props, State> {
 FieldArray.contextTypes = {
   reactFinalForm: PropTypes.object
 }
+
+polyfill(FieldArray)
+
+export default FieldArray
