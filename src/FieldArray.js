@@ -14,7 +14,7 @@ import type { FieldSubscription, FieldState, FieldValidator } from 'final-form'
 import type { Mutators } from 'final-form-arrays'
 import type { FieldArrayProps as Props } from './types'
 import renderComponent from './renderComponent'
-export const version = '1.0.4'
+export const version = '1.0.5'
 
 const versions = {
   'final-form': ffVersion,
