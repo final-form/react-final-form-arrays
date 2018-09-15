@@ -75,7 +75,8 @@ class FieldArray extends React.PureComponent<Props, State> {
       listener,
       subscription ? { ...subscription, length: true } : all,
       {
-        getValidator: () => this.validate
+        getValidator: () => this.validate,
+        isEqual: () => true
       }
     )
   }

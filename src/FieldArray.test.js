@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Fragment } from 'react'
 import TestUtils from 'react-dom/test-utils'
 import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
@@ -504,5 +504,50 @@ describe('FieldArray', () => {
     TestUtils.Simulate.click(button)
     await sleep(2)
     expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('should provide custom isEqual method to calculate pristine correctly', () => {
+    const formRender = jest.fn(() => (
+      <FieldArray
+        name="foo"
+        render={({ fields }) => (
+          <Fragment>
+            {fields.map((name, index) => (
+              <Fragment key={name}>
+                <Field name={`${name}.bar`} component="input" />
+                <button onClick={() => fields.remove(index)}>Remove</button>
+              </Fragment>
+            ))}
+          </Fragment>
+        )}
+      />
+    ))
+    const dom = TestUtils.renderIntoDocument(
+      <Form
+        initialValues={{ foo: [{ bar: 'example' }] }}
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators}
+        render={formRender}
+      />
+    )
+    const input = TestUtils.findRenderedDOMComponentWithTag(dom, 'input')
+    const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
+
+    // initially pristine true
+    expect(formRender.mock.calls[0][0]).toMatchObject({
+      pristine: true
+    })
+
+    // changing value, pristine false
+    TestUtils.Simulate.change(input, { target: { value: 'foo' } })
+    expect(formRender.mock.calls[1][0]).toMatchObject({ pristine: false })
+
+    // changing value back to default, pristine true
+    TestUtils.Simulate.change(input, { target: { value: 'example' } })
+    expect(formRender.mock.calls[2][0]).toMatchObject({ pristine: true })
+
+    // removing field, pristine false
+    TestUtils.Simulate.click(button)
+    expect(formRender.mock.calls[3][0]).toMatchObject({ pristine: false })
   })
 })
