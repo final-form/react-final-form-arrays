@@ -135,7 +135,7 @@ describe('FieldArray', () => {
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
 
-    expect(renderArray).toHaveBeenCalledTimes(3)
+    expect(renderArray).toHaveBeenCalledTimes(2)
     expect(renderArray.mock.calls[1][0].value).toBeUndefined()
   })
 
@@ -246,7 +246,7 @@ describe('FieldArray', () => {
     renderArray.mock.calls[0][0].fields.push('c')
     await sleep(2)
 
-    expect(renderArray).toHaveBeenCalledTimes(2)
+    expect(renderArray).toHaveBeenCalledTimes(3)
     expect(renderArray.mock.calls[1][0].meta.valid).toBe(false)
     expect(renderArray.mock.calls[1][0].meta.error).toBe('Too long')
   })
