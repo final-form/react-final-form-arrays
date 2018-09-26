@@ -135,7 +135,7 @@ describe('FieldArray', () => {
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
 
-    expect(renderArray).toHaveBeenCalledTimes(2)
+    expect(renderArray).toHaveBeenCalledTimes(3)
     expect(renderArray.mock.calls[1][0].value).toBeUndefined()
   })
 
