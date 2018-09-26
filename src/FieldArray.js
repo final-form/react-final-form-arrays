@@ -31,7 +31,7 @@ type State = {
   state: ?FieldState
 }
 
-class FieldArray extends React.PureComponent<Props, State> {
+class FieldArray extends React.Component<Props, State> {
   context: ReactContext
   props: Props
   state: State
