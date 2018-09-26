@@ -246,9 +246,9 @@ describe('FieldArray', () => {
     renderArray.mock.calls[0][0].fields.push('c')
     await sleep(2)
 
-    expect(renderArray).toHaveBeenCalledTimes(2)
-    expect(renderArray.mock.calls[1][0].meta.valid).toBe(false)
-    expect(renderArray.mock.calls[1][0].meta.error).toBe('Too long')
+    expect(renderArray).toHaveBeenCalledTimes(3)
+    expect(renderArray.mock.calls[2][0].meta.valid).toBe(false)
+    expect(renderArray.mock.calls[2][0].meta.error).toBe('Too long')
   })
 
   it('should provide forEach', () => {
