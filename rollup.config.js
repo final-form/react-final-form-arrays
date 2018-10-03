@@ -48,7 +48,7 @@ export default {
     },
     output
   ),
-  external: ['react', 'prop-types', 'final-form', 'react-final-form'],
+  external: ['react', 'prop-types', 'final-form', 'react-final-form', 'react-lifecycles-compat'],
   plugins: [
     resolve({ jsnext: true, main: true }),
     flow(),
