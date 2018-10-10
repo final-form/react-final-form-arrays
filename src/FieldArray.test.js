@@ -506,21 +506,20 @@ describe('FieldArray', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 
-  it('should provide custom isEqual method to calculate pristine correctly', () => {
-    const formRender = jest.fn(() => (
-      <FieldArray
-        name="foo"
-        render={({ fields }) => (
-          <Fragment>
-            {fields.map((name, index) => (
-              <Fragment key={name}>
-                <Field name={`${name}.bar`} component="input" />
-                <button onClick={() => fields.remove(index)}>Remove</button>
-              </Fragment>
-            ))}
+  it('should provide default isEqual method to calculate pristine correctly', () => {
+    const arrayFieldRender = jest.fn(({ fields }) => (
+      <Fragment>
+        {fields.map((name, index) => (
+          <Fragment key={name}>
+            <Field name={`${name}.bar`} component="input" />
+            <button onClick={() => fields.remove(index)}>Remove</button>
           </Fragment>
-        )}
-      />
+        ))}
+      </Fragment>
+    ))
+
+    const formRender = jest.fn(() => (
+      <FieldArray name="foo" render={arrayFieldRender} />
     ))
     const dom = TestUtils.renderIntoDocument(
       <Form

@@ -66,6 +66,14 @@ class FieldArray extends React.PureComponent<Props, State> {
     this.mounted = false
   }
 
+  isEqual = (a: Array<any>, b: Array<any>) => {
+    if (typeof this.props.isEqual === 'function') {
+      return this.props.isEqual(a, b)
+    }
+
+    return true
+  }
+
   subscribe = (
     { name, subscription }: Props,
     listener: (state: FieldState) => void
@@ -76,7 +84,7 @@ class FieldArray extends React.PureComponent<Props, State> {
       subscription ? { ...subscription, length: true } : all,
       {
         getValidator: () => this.validate,
-        isEqual: () => true
+        isEqual: this.isEqual
       }
     )
   }
@@ -84,7 +92,7 @@ class FieldArray extends React.PureComponent<Props, State> {
   validate: FieldValidator = (...args) => {
     const { validate } = this.props
     if (!validate) return undefined
-    const error = validate(...args)
+    const error = validate(args[0], args[1])
     if (!error || Array.isArray(error)) {
       return error
     } else {
@@ -192,8 +200,7 @@ class FieldArray extends React.PureComponent<Props, State> {
       valid,
       visited,
       ...fieldStateFunctions
-    } =
-      this.state.state || {}
+    } = this.state.state || {}
     const meta = {
       active,
       dirty,
