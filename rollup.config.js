@@ -43,12 +43,19 @@ export default {
         react: 'React',
         'prop-types': 'PropTypes',
         'final-form': 'FinalForm',
-        'react-final-form': 'ReactFinalForm'
+        'react-final-form': 'ReactFinalForm',
+        'react-lifecycles-compat': 'ReactLifecyclesCompat'
       }
     },
     output
   ),
-  external: ['react', 'prop-types', 'final-form', 'react-final-form', 'react-lifecycles-compat'],
+  external: [
+    'react',
+    'prop-types',
+    'final-form',
+    'react-final-form',
+    'react-lifecycles-compat'
+  ],
   plugins: [
     resolve({ jsnext: true, main: true }),
     flow(),
@@ -56,8 +63,34 @@ export default {
     babel({
       exclude: 'node_modules/**',
       babelrc: false,
-      presets: [['env', { modules: false }], 'stage-2'],
-      plugins: ['external-helpers']
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            loose: true,
+            modules: false
+          }
+        ],
+        '@babel/preset-react',
+        '@babel/preset-flow'
+      ],
+      plugins: [
+        '@babel/plugin-transform-flow-strip-types',
+        '@babel/plugin-syntax-dynamic-import',
+        '@babel/plugin-syntax-import-meta',
+        '@babel/plugin-proposal-class-properties',
+        '@babel/plugin-proposal-json-strings',
+        [
+          '@babel/plugin-proposal-decorators',
+          {
+            legacy: true
+          }
+        ],
+        '@babel/plugin-proposal-function-sent',
+        '@babel/plugin-proposal-export-namespace-from',
+        '@babel/plugin-proposal-numeric-separator',
+        '@babel/plugin-proposal-throw-expressions'
+      ]
     }),
     umd
       ? replace({
