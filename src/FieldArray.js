@@ -189,6 +189,7 @@ class FieldArray extends React.Component<Props, State> {
       length,
       active,
       dirty,
+      dirtySinceLastSubmit,
       error,
       initial,
       invalid,
@@ -200,10 +201,12 @@ class FieldArray extends React.Component<Props, State> {
       valid,
       visited,
       ...fieldStateFunctions
-    } = this.state.state || {}
+    } =
+      this.state.state || {}
     const meta = {
       active,
       dirty,
+      dirtySinceLastSubmit,
       error,
       initial,
       invalid,
