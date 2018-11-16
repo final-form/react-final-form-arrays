@@ -44,6 +44,9 @@ export type FieldArrayProps = {
   name: string,
   subscription?: FieldSubscription,
   isEqual?: (any, any) => boolean,
-  validate?: (value: ?(any[]), allValues: Object) => ?any,
-  reactFinalForm: FormApi
+  validate?: (value: ?(any[]), allValues: Object) => ?any
 } & RenderableProps<FieldArrayRenderProps>
+
+export type FieldArrayPropsWithForm = {
+  reactFinalForm: FormApi
+} & FieldArrayProps

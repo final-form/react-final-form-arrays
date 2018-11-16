@@ -10,10 +10,10 @@ import { version as rffVersion } from 'react-final-form'
 import diffSubscription from './diffSubscription'
 import type { FieldSubscription, FieldState, FieldValidator } from 'final-form'
 import type { Mutators } from 'final-form-arrays'
-import type { FieldArrayProps as Props } from './types'
+import type { FieldArrayPropsWithForm as Props } from './types'
 import renderComponent from './renderComponent'
 import { withReactFinalForm } from 'react-final-form'
-export const version = '1.0.6'
+export const version = '2.0.1'
 
 const versions = {
   'final-form': ffVersion,
