@@ -1,20 +1,19 @@
 // @flow
 import * as React from 'react'
 import { polyfill } from 'react-lifecycles-compat'
-import PropTypes from 'prop-types'
 import {
   fieldSubscriptionItems,
   version as ffVersion,
   ARRAY_ERROR
 } from 'final-form'
 import { version as rffVersion } from 'react-final-form'
-import type { ReactContext } from 'react-final-form'
 import diffSubscription from './diffSubscription'
 import type { FieldSubscription, FieldState, FieldValidator } from 'final-form'
 import type { Mutators } from 'final-form-arrays'
-import type { FieldArrayProps as Props } from './types'
+import type { FieldArrayPropsWithForm as Props } from './types'
 import renderComponent from './renderComponent'
-export const version = '1.0.6'
+import { withReactFinalForm } from 'react-final-form'
+export const version = '2.0.1'
 
 const versions = {
   'final-form': ffVersion,
@@ -31,8 +30,7 @@ type State = {
   state: ?FieldState
 }
 
-class FieldArray extends React.PureComponent<Props, State> {
-  context: ReactContext
+class FieldArray extends React.Component<Props, State> {
   props: Props
   state: State
   mutators: Mutators
@@ -41,16 +39,16 @@ class FieldArray extends React.PureComponent<Props, State> {
 
   static displayName = `ReactFinalFormFieldArray(${ffVersion})(${version})`
 
-  constructor(props: Props, context: ReactContext) {
-    super(props, context)
+  constructor(props: Props) {
+    super(props)
     let initialState
     // istanbul ignore next
-    if (process.env.NODE_ENV !== 'production' && !context.reactFinalForm) {
+    if (process.env.NODE_ENV !== 'production' && !props.reactFinalForm) {
       console.error(
         'Warning: FieldArray must be used inside of a ReactFinalForm component'
       )
     }
-    const { reactFinalForm } = this.context
+    const { reactFinalForm } = props
     if (reactFinalForm) {
       // avoid error, warning will alert developer to their mistake
       this.subscribe(props, (state: FieldState) => {
@@ -78,7 +76,7 @@ class FieldArray extends React.PureComponent<Props, State> {
     { name, subscription }: Props,
     listener: (state: FieldState) => void
   ) => {
-    this.unsubscribe = this.context.reactFinalForm.registerField(
+    this.unsubscribe = this.props.reactFinalForm.registerField(
       name,
       listener,
       subscription ? { ...subscription, length: true } : all,
@@ -104,7 +102,7 @@ class FieldArray extends React.PureComponent<Props, State> {
   }
 
   bindMutators = ({ name }: Props) => {
-    const { reactFinalForm } = this.context
+    const { reactFinalForm } = this.props
     if (reactFinalForm) {
       const { mutators } = reactFinalForm
       const hasMutators = !!(mutators && mutators.push && mutators.pop)
@@ -163,7 +161,7 @@ class FieldArray extends React.PureComponent<Props, State> {
         fieldSubscriptionItems
       )
     ) {
-      if (this.context.reactFinalForm) {
+      if (this.props.reactFinalForm) {
         // avoid error, warning will alert developer to their mistake
         this.unsubscribe()
         this.subscribe(nextProps, this.notify)
@@ -189,6 +187,7 @@ class FieldArray extends React.PureComponent<Props, State> {
       length,
       active,
       dirty,
+      dirtySinceLastSubmit,
       error,
       initial,
       invalid,
@@ -204,6 +203,7 @@ class FieldArray extends React.PureComponent<Props, State> {
     const meta = {
       active,
       dirty,
+      dirtySinceLastSubmit,
       error,
       initial,
       invalid,
@@ -238,10 +238,6 @@ class FieldArray extends React.PureComponent<Props, State> {
   }
 }
 
-FieldArray.contextTypes = {
-  reactFinalForm: PropTypes.object
-}
-
 polyfill(FieldArray)
 
-export default FieldArray
+export default withReactFinalForm(FieldArray)

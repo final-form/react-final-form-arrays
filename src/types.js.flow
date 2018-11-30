@@ -1,6 +1,6 @@
 // @flow
 import * as React from 'react'
-import type { FieldSubscription, FieldState } from 'final-form'
+import type { FieldSubscription, FieldState, FormApi } from 'final-form'
 
 export type FieldArrayRenderProps = {
   fields: {
@@ -20,6 +20,7 @@ export type FieldArrayRenderProps = {
     // TODO: Make a diff of `FieldState` without all the functions
     active: boolean,
     dirty: boolean,
+    dirtySinceLastSubmit: boolean,
     error: boolean,
     initial: boolean,
     invalid: boolean,
@@ -45,3 +46,7 @@ export type FieldArrayProps = {
   isEqual?: (any, any) => boolean,
   validate?: (value: ?(any[]), allValues: Object) => ?any
 } & RenderableProps<FieldArrayRenderProps>
+
+export type FieldArrayPropsWithForm = {
+  reactFinalForm: FormApi
+} & FieldArrayProps

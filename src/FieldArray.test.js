@@ -100,7 +100,7 @@ describe('FieldArray', () => {
 
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
-    await sleep(2)
+    await sleep(10)
 
     expect(renderArray).toHaveBeenCalledTimes(4)
     expect(renderArray.mock.calls[3][0].fields.value).toEqual(['Garfield'])
@@ -246,9 +246,9 @@ describe('FieldArray', () => {
     renderArray.mock.calls[0][0].fields.push('c')
     await sleep(2)
 
-    expect(renderArray).toHaveBeenCalledTimes(2)
-    expect(renderArray.mock.calls[1][0].meta.valid).toBe(false)
-    expect(renderArray.mock.calls[1][0].meta.error).toBe('Too long')
+    expect(renderArray).toHaveBeenCalledTimes(3)
+    expect(renderArray.mock.calls[2][0].meta.valid).toBe(false)
+    expect(renderArray.mock.calls[2][0].meta.error).toBe('Too long')
   })
 
   it('should provide forEach', () => {
@@ -313,6 +313,59 @@ describe('FieldArray', () => {
     expect(spy.mock.calls[1]).toEqual(['foo[1]', 1])
     expect(spy.mock.calls[2]).toEqual(['foo[2]', 2])
     expect(result).toEqual(['FOO[0]', 'FOO[1]', 'FOO[2]'])
+  })
+
+  it('calculate dirty/pristine using provided isEqual predicate', async () => {
+    const renderInput = jest.fn(({ input }) => <input {...input} />)
+    const renderFields = jest.fn(({ fields }) =>
+      fields.map(field => (
+        <Field
+          name={`${field}.bar`}
+          key={`${field}.bar`}
+          component={renderInput}
+        />
+      ))
+    )
+    const isEqual = jest.fn(
+      (aArray, bArray) =>
+        !aArray.some((a, index) => a.bar !== bArray[index].bar)
+    )
+    TestUtils.renderIntoDocument(
+      <Form
+        onSubmit={onSubmitMock}
+        initialValues={{ foo: [{ bar: 'a' }, { bar: 'b' }] }}
+      >
+        {() => (
+          <form>
+            <FieldArray
+              name="foo"
+              subscription={{ dirty: true }}
+              isEqual={isEqual}
+            >
+              {renderFields}
+            </FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+    expect(renderInput).toHaveBeenCalled()
+    expect(renderInput).toHaveBeenCalledTimes(2)
+    expect(renderInput.mock.calls[0][0].input.value).toBe('a')
+    expect(renderInput.mock.calls[1][0].input.value).toBe('b')
+
+    expect(renderFields).toHaveBeenCalledTimes(1)
+    expect(renderFields.mock.calls[0][0].meta.dirty).toBe(false)
+
+    // change value
+    renderInput.mock.calls[1][0].input.onChange('c')
+
+    expect(renderInput).toHaveBeenCalledTimes(5)
+    expect(renderInput.mock.calls[4][0].input.value).toBe('c')
+    expect(renderInput.mock.calls[4][0].meta.dirty).toBe(true)
+
+    await sleep(1)
+    expect(renderFields).toHaveBeenCalledTimes(3)
+    expect(renderFields.mock.calls[2][0].meta.dirty).toBe(true)
   })
 
   it('should allow Field components to be rendered', async () => {
