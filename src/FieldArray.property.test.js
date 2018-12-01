@@ -53,54 +53,98 @@ describe('FieldArray', () => {
     const DOM = setup()
     const Model = []
 
+    const selectAllInputs = () => DOM.container.querySelectorAll('input')
+
+    const correctNumberOfInputs = () => {
+      const inputElements = selectAllInputs()
+      expect(inputElements.length).toBe(Model.length)
+    }
+
+    const correctValues = () => {
+      const inputElements = selectAllInputs()
+      const realValues = [...inputElements.values()].map(
+        element => element.value
+      )
+      realValues.forEach((realValue, index) => {
+        const modelValue = Model[index]
+        expect(realValue).toBe(modelValue)
+      })
+    }
+
     const commands = {
-      addField: async () => {
-        // abstract
-        Model.push('')
-        // real
-        const buttonEl = DOM.getByText('Add fruit')
-        fireEvent.click(buttonEl)
-        await waitForFormToRerender()
+      addField: {
+        preconditions: () => true,
+        run: async () => {
+          // abstract
+          Model.push('')
+          // real
+          const buttonEl = DOM.getByText('Add fruit')
+          fireEvent.click(buttonEl)
+          await waitForFormToRerender()
+        },
+        postconditions: () => {
+          correctNumberOfInputs()
+          correctValues()
+        }
       },
-      changeValue: (index, newValue) => {
-        // abstract
-        Model[index] = newValue
-        // real
-        const label = `Fruit ${index + 1} name`
-        const inputEl = DOM.getByLabelText(label)
-        fireEvent.change(inputEl, { target: { value: newValue } })
+      changeValue: {
+        preconditions: (index, newValue) => {
+          if (index >= Model.length) return false
+          return true
+        },
+        run: (index, newValue) => {
+          // abstract
+          Model[index] = newValue
+          // real
+          const label = `Fruit ${index + 1} name`
+          const inputEl = DOM.getByLabelText(label)
+          fireEvent.change(inputEl, { target: { value: newValue } })
+        },
+        postconditions: () => {
+          correctNumberOfInputs()
+          correctValues()
+        }
       },
-      move: async (from, to) => {
-        // abstract
-        const cache = Model[from]
-        Model.splice(from, 1)
-        Model.splice(to, 0, cache)
-        // real
-        const buttonEl = DOM.getByText('Move fruit')
-        TestUtils.Simulate.keyPress(buttonEl, { which: from, location: to })
-        await waitForFormToRerender()
+      move: {
+        preconditions: (from, to) => {
+          if (from >= Model.length || to >= Model.length) return false
+          return true
+        },
+        run: async (from, to) => {
+          // abstract
+          const cache = Model[from]
+          Model.splice(from, 1)
+          Model.splice(to, 0, cache)
+          // real
+          const buttonEl = DOM.getByText('Move fruit')
+          TestUtils.Simulate.keyPress(buttonEl, { which: from, location: to })
+          await waitForFormToRerender()
+        },
+        postconditions: () => {
+          correctNumberOfInputs()
+          correctValues()
+        }
       }
     }
 
-    await commands.addField()
-    commands.changeValue(0, 'apple')
-    await commands.addField()
-    commands.changeValue(1, 'banana')
-    await commands.move(0, 1)
-    commands.changeValue(0, 'orange')
+    function execute(command) {
+      return {
+        with: async (...args) => {
+          if (!command.preconditions(...args)) {
+            throw Error('command cannot be executed');
+          }
+          await command.run(...args)
+          command.postconditions(...args)
+        }
+      }
+    }
 
-    const inputElements = DOM.container.querySelectorAll('input')
-
-    // number of elements should be the same
-    expect(inputElements.length).toBe(Model.length)
-
-    // values should be the same
-    const realValues = [...inputElements.values()].map(element => element.value)
-    console.log(realValues)
-    realValues.forEach((realValue, index) => {
-      const modelValue = Model[index]
-      expect(realValue).toBe(modelValue)
-    })
+    await execute(commands.addField).with()
+    await execute(commands.changeValue).with(0, 'apple')
+    await execute(commands.addField).with()
+    await execute(commands.changeValue).with(1, 'banana')
+    await execute(commands.move).with(0, 1)
+    await execute(commands.changeValue).with(0, 'orange')
 
     DOM.unmount()
   })
