@@ -10,11 +10,10 @@ const nope = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
-const getDefaultFieldState = () => ({
-  value: '',
-  pristine: true,
-  touched: false
-})
+const getFieldState = ({ value = '', touched = false } = {}) => {
+  const pristine = value === ''
+  return { value: value || '', pristine, touched }
+}
 const setup = async () => {
   const Input = ({ input, meta, ...restProps }) => {
     const dataAttrs = {
@@ -29,7 +28,7 @@ const setup = async () => {
       {({
         form: {
           mutators,
-          mutators: { push, move, insert, pop, remove, shift, swap }
+          mutators: { push, move, insert, pop, remove, shift, swap, update }
         }
       }) => {
         return (
@@ -45,41 +44,49 @@ const setup = async () => {
               }}
             </FieldArray>
             <button
-              onKeyPress={e => {
-                move('fruits', e.which, e.location)
-              }}
-            >
-              Move fruit
-            </button>
-            <button
-              onKeyPress={e => {
-                insert('fruits', e.which, e.key)
+              onClick={({ index, value }) => {
+                console.log(index, value)
+                insert('fruits', index, value)
               }}
             >
               Insert fruit
             </button>
+            <button
+              onClick={({ from, to }) => {
+                move('fruits', from, to)
+              }}
+            >
+              Move fruit
+            </button>
             <button onClick={() => pop('fruits')}>Remove the last fruit</button>
             <button
-              onKeyPress={e => {
-                mutators.push('fruits', e.key)
+              onClick={({ value }) => {
+                mutators.push('fruits', value)
               }}
             >
               Push fruit
             </button>
             <button
-              onKeyPress={e => {
-                remove('fruits', e.which)
+              onClick={({ index }) => {
+                remove('fruits', index)
               }}
             >
               Remove fruit
             </button>
             <button onClick={() => shift('fruits')}>Shift fruit</button>
             <button
-              onKeyPress={e => {
-                swap('fruits', e.which, e.location)
+              onClick={({ a, b }) => {
+                swap('fruits', a, b)
               }}
             >
               Swap fruits
+            </button>
+            <button
+              onClick={({ index, value }) => {
+                update('fruits', index, value)
+              }}
+            >
+              Update fruit
             </button>
           </Fragment>
         )
@@ -91,8 +98,8 @@ const setup = async () => {
 
   const buttonEl = DOM.getByText('Push fruit')
   ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
-    TestUtils.Simulate.keyPress(buttonEl)
-    Model.push(getDefaultFieldState())
+    TestUtils.Simulate.click(buttonEl)
+    Model.push(getFieldState())
   })
   await waitForFormToRerender()
   return { DOM, Model }
@@ -131,14 +138,8 @@ class ChangeValue {
   }
   run = (Model, DOM) => {
     // abstract
-    const DEFAULT_FIELD_STATE = getDefaultFieldState()
-    const pristine = this.newValue === DEFAULT_FIELD_STATE.value
-    Model[this.index] = {
-      ...DEFAULT_FIELD_STATE,
-      value: this.newValue,
-      touched: true,
-      pristine
-    }
+    Model[this.index] = getFieldState({ value: this.newValue, touched: true })
+
     // real
     const label = `Fruit ${this.index + 1} name`
     const inputEl = DOM.getByLabelText(label)
@@ -174,9 +175,9 @@ class Move {
     Model.splice(this.to, 0, cache)
     // real
     const buttonEl = DOM.getByText('Move fruit')
-    TestUtils.Simulate.keyPress(buttonEl, {
-      which: this.from,
-      location: this.to
+    TestUtils.Simulate.click(buttonEl, {
+      from: this.from,
+      to: this.to
     })
     await waitForFormToRerender()
     // postconditions
@@ -198,17 +199,13 @@ class Insert {
   run = async (Model, DOM) => {
     // abstract
     const indexOfTheNewElement = Math.min(Model.length, this.index)
-    const DEFAULT_FIELD_STATE = getDefaultFieldState()
-    Model.splice(indexOfTheNewElement, 0, {
-      ...DEFAULT_FIELD_STATE,
-      value: this.value,
-      pristine: this.value === DEFAULT_FIELD_STATE.value
-    })
+    Model.splice(indexOfTheNewElement, 0, getFieldState({ value: this.value }))
+
     // real
     const buttonEl = DOM.getByText('Insert fruit')
-    TestUtils.Simulate.keyPress(buttonEl, {
-      which: this.index,
-      key: this.value
+    TestUtils.Simulate.click(buttonEl, {
+      index: this.index,
+      value: this.value
     })
     await waitForFormToRerender()
     // postconditions
@@ -243,16 +240,12 @@ class Push {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    Model.push({
-      ...getDefaultFieldState(),
-      value: this.value,
-      pristine: this.value === getDefaultFieldState().value
-    })
+    Model.push(getFieldState({ value: this.value }))
 
     // real
     const buttonEl = DOM.getByText('Push fruit')
-    TestUtils.Simulate.keyPress(buttonEl, {
-      key: this.value
+    TestUtils.Simulate.click(buttonEl, {
+      value: this.value
     })
     await waitForFormToRerender()
     // postconditions
@@ -277,8 +270,8 @@ class Remove {
 
     // real
     const buttonEl = DOM.getByText('Remove fruit')
-    TestUtils.Simulate.keyPress(buttonEl, {
-      which: this.index
+    TestUtils.Simulate.click(buttonEl, {
+      index: this.index
     })
     await waitForFormToRerender()
     // postconditions
@@ -327,9 +320,39 @@ class Swap {
     Model[this.b] = cache
     // real
     const buttonEl = DOM.getByText('Swap fruits')
-    TestUtils.Simulate.keyPress(buttonEl, {
-      which: this.a,
-      location: this.b
+    TestUtils.Simulate.click(buttonEl, {
+      a: this.a,
+      b: this.b
+    })
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
+class Update {
+  constructor(index, newValue) {
+    this.index = index
+    this.newValue = newValue
+  }
+  static generate = () =>
+    fc
+      .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
+      .map(args => new Update(...args))
+  toString = () => ` update(${this.index}, ${this.newValue})`
+  check = Model => {
+    if (this.index >= Model.length) return false
+    return true
+  }
+  run = async (Model, DOM) => {
+    // abstract
+    Model[this.index] = getFieldState({ value: this.newValue, touched: true })
+
+    // real
+    const buttonEl = DOM.getByText('Update fruit')
+    TestUtils.Simulate.click(buttonEl, {
+      index: this.index,
+      value: this.newValue
     })
     await waitForFormToRerender()
     // postconditions
@@ -339,10 +362,10 @@ class Swap {
 
 const generateCommands = [
   ChangeValue.generate(),
-  // Insert.generate(),
+  // Insert.generate()
   // Move.generate(),
   Pop.generate(),
-  // Push.generate()
+  // Push.generate(),
   Remove.generate()
   // Shift.generate()
   // Swap.generate()
