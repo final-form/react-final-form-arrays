@@ -232,22 +232,6 @@ const commands = {
   Pop
 }
 
-const genericModelRun = async (setup, commands, initialValue, then) => {
-  const { model, real } = await setup()
-  let state = initialValue
-  for (const c of commands) {
-    state = then(state, () => {
-      if (c.check(model)) return c.run(model, real)
-    })
-  }
-  return state
-}
-
-const asyncModelRun = (setup, commands) => {
-  const then = (p, c) => p.then(c)
-  return genericModelRun(setup, commands, Promise.resolve(), then)
-}
-
 const generateCommands = [
   commands.AddField.generate(),
   commands.ChangeValue.generate(),
@@ -269,7 +253,7 @@ describe('FieldArray', () => {
     await fc.assert(
       fc
         .asyncProperty(fc.commands(generateCommands), async commands => {
-          await asyncModelRun(getInitialState, commands)
+          await fc.asyncModelRun(getInitialState, commands)
         })
         .afterEach(cleanup),
       {
