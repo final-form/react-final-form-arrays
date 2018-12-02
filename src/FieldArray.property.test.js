@@ -45,13 +45,6 @@ const setup = async () => {
               }}
             </FieldArray>
             <button
-              onClick={() => {
-                push('fruits')
-              }}
-            >
-              Add fruit
-            </button>
-            <button
               onKeyPress={e => {
                 move('fruits', e.which, e.location)
               }}
@@ -89,9 +82,9 @@ const setup = async () => {
 
   const Model = []
 
-  const buttonEl = DOM.getByText('Add fruit')
+  const buttonEl = DOM.getByText('Push fruit')
   ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
-    fireEvent.click(buttonEl)
+    TestUtils.Simulate.keyPress(buttonEl)
     Model.push(getDefaultFieldState())
   })
   await waitForFormToRerender()
@@ -140,22 +133,6 @@ const validateAttributes = (Model, DOM) => {
   correctMetadata(Model, DOM)
 }
 
-class AddField {
-  static generate = () => fc.constant(new commands.AddField())
-  toString = () => 'add field'
-  check = () => true
-  run = async (Model, DOM) => {
-    // abstract
-    Model.push(getDefaultFieldState())
-    // real
-    const buttonEl = DOM.getByText('Add fruit')
-    fireEvent.click(buttonEl)
-    await waitForFormToRerender()
-    // postconditions
-    validateAttributes(Model, DOM)
-  }
-}
-
 class ChangeValue {
   constructor(index, newValue) {
     this.index = index
@@ -164,8 +141,8 @@ class ChangeValue {
   static generate = () =>
     fc
       .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
-      .map(args => new commands.ChangeValue(...args))
-  toString = () => `change value at ${this.index} to ${this.newValue}`
+      .map(args => new ChangeValue(...args))
+  toString = () => ` change value at ${this.index} to ${this.newValue}`
   check = Model => {
     if (this.index >= Model.length) return false
     return true
@@ -202,8 +179,8 @@ class Move {
         fc.nat(INITIAL_NUMBER_OF_FIELDS * 2),
         fc.nat(INITIAL_NUMBER_OF_FIELDS * 2)
       )
-      .map(args => new commands.Move(...args))
-  toString = () => `move ${this.from} to ${this.to}`
+      .map(args => new Move(...args))
+  toString = () => ` move(${this.from}, ${this.to})`
   check = Model => {
     if (this.from >= Model.length || this.to >= Model.length) return false
     return true
@@ -233,8 +210,8 @@ class Insert {
   static generate = () =>
     fc
       .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
-      .map(args => new commands.Insert(...args))
-  toString = () => `insert ${this.value} at ${this.index}`
+      .map(args => new Insert(...args))
+  toString = () => ` insert(${this.index}, ${this.value})`
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -258,8 +235,8 @@ class Insert {
 }
 
 class Pop {
-  static generate = () => fc.constant(new commands.Pop())
-  toString = () => 'removing the last element'
+  static generate = () => fc.constant(new Pop())
+  toString = () => ' pop()'
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -279,8 +256,8 @@ class Push {
   constructor(value) {
     this.value = value
   }
-  static generate = () => fc.string().map(value => new commands.Push(value))
-  toString = () => `push a new field with value ${this.value}`
+  static generate = () => fc.option(fc.string()).map(value => new Push(value))
+  toString = () => ` push(${this.value})`
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -306,10 +283,8 @@ class Remove {
     this.index = index
   }
   static generate = () =>
-    fc
-      .nat(INITIAL_NUMBER_OF_FIELDS * 2)
-      .map(index => new commands.Remove(index))
-  toString = () => `remove a field from index ${this.index}`
+    fc.nat(INITIAL_NUMBER_OF_FIELDS * 2).map(index => new Remove(index))
+  toString = () => ` remove(${this.index})`
   check = Model => {
     if (Model.length >= this.index) return false
     return true
@@ -330,8 +305,8 @@ class Remove {
 }
 
 class Shift {
-  static generate = () => fc.constant(new commands.Shift())
-  toString = () => `shift()`
+  static generate = () => fc.constant(new Shift())
+  toString = () => ` shift()`
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -346,26 +321,14 @@ class Shift {
   }
 }
 
-const commands = {
-  AddField,
-  ChangeValue,
-  Move,
-  Insert,
-  Pop,
-  Push,
-  Remove,
-  Shift
-}
-
 const generateCommands = [
-  commands.AddField.generate(),
-  commands.ChangeValue.generate(),
-  // commands.Move.generate(),
-  // commands.Insert.generate(),
-  commands.Pop.generate(),
-  // commands.Push.generate()
-  commands.Remove.generate()
-  // commands.Shift.generate()
+  ChangeValue.generate(),
+  // Move.generate(),
+  // Insert.generate(),
+  Pop.generate(),
+  // Push.generate()
+  Remove.generate()
+  // Shift.generate()
 ]
 
 const getInitialState = async () => {
@@ -393,7 +356,7 @@ describe('FieldArray', () => {
         // seed: 1882099238,
         examples: [
           // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
-          // [[new commands.Move(1, 0), new commands.ChangeValue(0, 'apple')]]
+          // [[new Move(1, 0), new ChangeValue(0, 'apple')]]
         ]
       }
     )
