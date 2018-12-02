@@ -29,7 +29,7 @@ const setup = async () => {
       {({
         form: {
           mutators,
-          mutators: { push, move, insert, pop }
+          mutators: { push, move, insert, pop, remove }
         }
       }) => {
         return (
@@ -72,6 +72,13 @@ const setup = async () => {
               }}
             >
               Push fruit
+            </button>
+            <button
+              onKeyPress={e => {
+                remove('fruits', e.which)
+              }}
+            >
+              Remove fruit
             </button>
           </Fragment>
         )
@@ -293,13 +300,42 @@ class Push {
   }
 }
 
+class Remove {
+  constructor(index) {
+    this.index = index
+  }
+  static generate = () =>
+    fc
+      .nat(INITIAL_NUMBER_OF_FIELDS * 2)
+      .map(index => new commands.Remove(index))
+  toString = () => `remove a field from index ${this.index}`
+  check = Model => {
+    if (Model.length >= this.index) return false
+    return true
+  }
+  run = async (Model, DOM) => {
+    // abstract
+    Model.splice(this.index, 1)
+
+    // real
+    const buttonEl = DOM.getByText('Remove fruit')
+    TestUtils.Simulate.keyPress(buttonEl, {
+      which: this.index
+    })
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
 const commands = {
   AddField,
   ChangeValue,
   Move,
   Insert,
   Pop,
-  Push
+  Push,
+  Remove
 }
 
 const generateCommands = [
@@ -307,8 +343,9 @@ const generateCommands = [
   commands.ChangeValue.generate(),
   // commands.Move.generate(),
   // commands.Insert.generate(),
-  commands.Pop.generate()
+  commands.Pop.generate(),
   // commands.Push.generate()
+  commands.Remove.generate()
 ]
 
 const getInitialState = async () => {
