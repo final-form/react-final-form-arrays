@@ -15,7 +15,7 @@ const setup = async () => {
     <Form onSubmit={nope} mutators={arrayMutators}>
       {({
         form: {
-          mutators: { push, move, insert }
+          mutators: { push, move, insert, pop }
         }
       }) => {
         return (
@@ -51,6 +51,7 @@ const setup = async () => {
             >
               Insert fruit
             </button>
+            <button onClick={() => pop('fruits')}>Remove the last fruit</button>
           </Fragment>
         )
       }}
@@ -187,11 +188,31 @@ class Insert {
   }
 }
 
+class Pop {
+  static generate = () => fc.constant(new commands.Pop())
+  toString = () => 'removing the last element'
+  check = () => true
+  run = async (Model, DOM) => {
+    // abstract
+    Model.pop()
+
+    // real
+    const buttonEl = DOM.getByText('Remove the last fruit')
+    fireEvent.click(buttonEl)
+    await waitForFormToRerender()
+
+    // postconditions
+    correctNumberOfInputs(Model, DOM)
+    correctValues(Model, DOM)
+  }
+}
+
 const commands = {
   AddField,
   ChangeValue,
   Move,
-  Insert
+  Insert,
+  Pop
 }
 
 const genericModelRun = async (setup, commands, initialValue, then) => {
@@ -214,7 +235,8 @@ const generateCommands = [
   commands.AddField.generate(),
   commands.ChangeValue.generate(),
   commands.Move.generate(),
-  commands.Insert.generate()
+  commands.Insert.generate(),
+  commands.Pop.generate()
 ]
 
 const getInitialState = async () => {
