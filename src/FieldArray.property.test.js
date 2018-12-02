@@ -29,7 +29,7 @@ const setup = async () => {
       {({
         form: {
           mutators,
-          mutators: { push, move, insert, pop, remove }
+          mutators: { push, move, insert, pop, remove, shift }
         }
       }) => {
         return (
@@ -80,6 +80,7 @@ const setup = async () => {
             >
               Remove fruit
             </button>
+            <button onClick={() => shift('fruits')}>Shift fruit</button>
           </Fragment>
         )
       }}
@@ -328,6 +329,23 @@ class Remove {
   }
 }
 
+class Shift {
+  static generate = () => fc.constant(new commands.Shift())
+  toString = () => `shift()`
+  check = () => true
+  run = async (Model, DOM) => {
+    // abstract
+    Model.shift()
+
+    // real
+    const buttonEl = DOM.getByText('Shift fruit')
+    fireEvent.click(buttonEl)
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
 const commands = {
   AddField,
   ChangeValue,
@@ -335,7 +353,8 @@ const commands = {
   Insert,
   Pop,
   Push,
-  Remove
+  Remove,
+  Shift
 }
 
 const generateCommands = [
@@ -346,6 +365,7 @@ const generateCommands = [
   commands.Pop.generate(),
   // commands.Push.generate()
   commands.Remove.generate()
+  // commands.Shift.generate()
 ]
 
 const getInitialState = async () => {
