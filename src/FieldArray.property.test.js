@@ -63,7 +63,7 @@ const setup = async () => {
   const buttonEl = DOM.getByText('Add fruit')
   ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
     fireEvent.click(buttonEl)
-    Model.push('')
+    Model.push({ value: '' })
   })
   await waitForFormToRerender()
   return { DOM, Model }
@@ -78,7 +78,8 @@ const correctNumberOfInputs = (Model, DOM) => {
 const correctValues = (Model, DOM) => {
   const inputElements = selectAllInputs(DOM)
   const realValues = [...inputElements.values()].map(element => element.value)
-  expect(realValues).toEqual(Model)
+  const modelValues = Model.map(fieldState => fieldState.value)
+  expect(realValues).toEqual(modelValues)
 }
 
 class AddField {
@@ -87,7 +88,7 @@ class AddField {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    Model.push('')
+    Model.push({ value: '' })
     // real
     const buttonEl = DOM.getByText('Add fruit')
     fireEvent.click(buttonEl)
@@ -114,7 +115,7 @@ class ChangeValue {
   }
   run = (Model, DOM) => {
     // abstract
-    Model[this.index] = this.newValue
+    Model[this.index] = { value: this.newValue }
     // real
     const label = `Fruit ${this.index + 1} name`
     const inputEl = DOM.getByLabelText(label)
@@ -174,7 +175,7 @@ class Insert {
   run = async (Model, DOM) => {
     // abstract
     const indexOfTheNewElement = Math.min(Model.length, this.index)
-    Model.splice(indexOfTheNewElement, 0, this.value)
+    Model.splice(indexOfTheNewElement, 0, { value: this.value })
     // real
     const buttonEl = DOM.getByText('Insert fruit')
     TestUtils.Simulate.keyPress(buttonEl, {
