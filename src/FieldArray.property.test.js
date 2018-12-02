@@ -99,45 +99,20 @@ const setup = async () => {
 }
 const selectAllInputs = DOM => DOM.container.querySelectorAll('input')
 
-const correctNumberOfInputs = (Model, DOM) => {
-  const inputElements = selectAllInputs(DOM)
-  expect(inputElements.length).toBe(Model.length)
-}
-
-const correctValues = (Model, DOM) => {
-  const inputElements = selectAllInputs(DOM)
-  const realValues = [...inputElements.values()].map(element => element.value)
-  const modelValues = Model.map(fieldState => fieldState.value)
-  expect(realValues).toEqual(modelValues)
-}
-
-const correctMetadata = (Model, DOM) => {
+const realMatchesModel = (Model, DOM) => {
   const inputElements = selectAllInputs(DOM)
   const realMetadata = [...inputElements].map(
-    ({ dataset: { pristine, touched } }) => ({
-      pristine,
-      touched
+    ({ value, dataset: { pristine, touched } }) => ({
+      value,
+      pristine: pristine === 'true',
+      touched: touched === 'true'
     })
   )
-  const modelMetadata = Model.map(
-    ({ value, ...fieldMetadata }) => fieldMetadata
-  ).map(fieldMetadata => {
-    // data attributes in DOM are string
-    // so transform these bools to strings
-    // for comparison purposes
-    let modifiedObject = {}
-    Object.keys(fieldMetadata).forEach(property => {
-      modifiedObject[property] = String(fieldMetadata[property])
-    })
-    return modifiedObject
-  })
-  expect(realMetadata).toEqual(modelMetadata)
+  expect(realMetadata).toEqual(Model)
 }
 
 const validateAttributes = (Model, DOM) => {
-  correctNumberOfInputs(Model, DOM)
-  correctValues(Model, DOM)
-  correctMetadata(Model, DOM)
+  realMatchesModel(Model, DOM)
 }
 
 class ChangeValue {
