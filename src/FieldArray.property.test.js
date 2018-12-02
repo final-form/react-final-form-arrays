@@ -10,7 +10,20 @@ const nope = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
+const getDefaultFieldState = () => ({
+  value: '',
+  dirty: false,
+  touched: false
+})
 const setup = async () => {
+  const Input = ({ input, meta, ...restProps }) => {
+    const dataAttrs = {
+      'data-dirty': meta.dirty,
+      'data-touched': meta.touched
+    }
+    return <input {...input} {...dataAttrs} {...restProps} />
+  }
+
   const DOM = render(
     <Form onSubmit={nope} mutators={arrayMutators}>
       {({
@@ -25,7 +38,7 @@ const setup = async () => {
                 return fields.map((name, index) => (
                   <Fragment key={name}>
                     <label htmlFor={name}>Fruit {index + 1} name</label>
-                    <Field id={name} name={name} component="input" />
+                    <Field id={name} name={name} component={Input} />
                   </Fragment>
                 ))
               }}
@@ -63,7 +76,7 @@ const setup = async () => {
   const buttonEl = DOM.getByText('Add fruit')
   ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
     fireEvent.click(buttonEl)
-    Model.push({ value: '' })
+    Model.push(getDefaultFieldState())
   })
   await waitForFormToRerender()
   return { DOM, Model }
@@ -88,7 +101,7 @@ class AddField {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    Model.push({ value: '' })
+    Model.push(getDefaultFieldState())
     // real
     const buttonEl = DOM.getByText('Add fruit')
     fireEvent.click(buttonEl)
@@ -115,7 +128,7 @@ class ChangeValue {
   }
   run = (Model, DOM) => {
     // abstract
-    Model[this.index] = { value: this.newValue }
+    Model[this.index].value = this.newValue
     // real
     const label = `Fruit ${this.index + 1} name`
     const inputEl = DOM.getByLabelText(label)
@@ -175,7 +188,10 @@ class Insert {
   run = async (Model, DOM) => {
     // abstract
     const indexOfTheNewElement = Math.min(Model.length, this.index)
-    Model.splice(indexOfTheNewElement, 0, { value: this.value })
+    Model.splice(indexOfTheNewElement, 0, {
+      ...getDefaultFieldState(),
+      value: this.value
+    })
     // real
     const buttonEl = DOM.getByText('Insert fruit')
     TestUtils.Simulate.keyPress(buttonEl, {
@@ -235,7 +251,7 @@ const asyncModelRun = (setup, commands) => {
 const generateCommands = [
   commands.AddField.generate(),
   commands.ChangeValue.generate(),
-  commands.Move.generate(),
+  // commands.Move.generate(),
   commands.Insert.generate(),
   commands.Pop.generate()
 ]
