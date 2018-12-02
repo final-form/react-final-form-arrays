@@ -28,6 +28,7 @@ const setup = async () => {
     <Form onSubmit={nope} mutators={arrayMutators}>
       {({
         form: {
+          mutators,
           mutators: { push, move, insert, pop }
         }
       }) => {
@@ -65,6 +66,13 @@ const setup = async () => {
               Insert fruit
             </button>
             <button onClick={() => pop('fruits')}>Remove the last fruit</button>
+            <button
+              onKeyPress={e => {
+                mutators.push('fruits', e.key)
+              }}
+            >
+              Push fruit
+            </button>
           </Fragment>
         )
       }}
@@ -223,10 +231,11 @@ class Insert {
   run = async (Model, DOM) => {
     // abstract
     const indexOfTheNewElement = Math.min(Model.length, this.index)
+    const DEFAULT_FIELD_STATE = getDefaultFieldState()
     Model.splice(indexOfTheNewElement, 0, {
-      ...getDefaultFieldState(),
+      ...DEFAULT_FIELD_STATE,
       value: this.value,
-      pristine: this.value === undefined
+      pristine: this.value === DEFAULT_FIELD_STATE.value
     })
     // real
     const buttonEl = DOM.getByText('Insert fruit')
@@ -258,20 +267,48 @@ class Pop {
   }
 }
 
+class Push {
+  constructor(value) {
+    this.value = value
+  }
+  static generate = () => fc.string().map(value => new commands.Push(value))
+  toString = () => `push a new field with value ${this.value}`
+  check = () => true
+  run = async (Model, DOM) => {
+    // abstract
+    Model.push({
+      ...getDefaultFieldState(),
+      value: this.value,
+      pristine: this.value === getDefaultFieldState().value
+    })
+
+    // real
+    const buttonEl = DOM.getByText('Push fruit')
+    TestUtils.Simulate.keyPress(buttonEl, {
+      key: this.value
+    })
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
 const commands = {
   AddField,
   ChangeValue,
   Move,
   Insert,
-  Pop
+  Pop,
+  Push
 }
 
 const generateCommands = [
   commands.AddField.generate(),
   commands.ChangeValue.generate(),
-  commands.Move.generate(),
-  commands.Insert.generate(),
+  // commands.Move.generate(),
+  // commands.Insert.generate(),
   commands.Pop.generate()
+  // commands.Push.generate()
 ]
 
 const getInitialState = async () => {
