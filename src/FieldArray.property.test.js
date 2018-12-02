@@ -25,87 +25,73 @@ const setup = async () => {
 
   const DOM = render(
     <Form onSubmit={nope} mutators={arrayMutators}>
-      {({
-        form: {
-          mutators,
-          mutators: {
-            push,
-            move,
-            insert,
-            pop,
-            remove,
-            shift,
-            swap,
-            update,
-            unshift
-          }
-        }
-      }) => {
+      {() => {
         return (
-          <Fragment>
-            <FieldArray name="fruits">
-              {({ fields }) => {
-                return fields.map((name, index) => (
+          <FieldArray name="fruits">
+            {({ fields }) => (
+              <Fragment>
+                {fields.map((name, index) => (
                   <Fragment key={name}>
                     <label htmlFor={name}>Fruit {index + 1} name</label>
                     <Field id={name} name={name} component={Input} />
                   </Fragment>
-                ))
-              }}
-            </FieldArray>
-            <button
-              onClick={({ index, value }) => {
-                console.log(index, value)
-                insert('fruits', index, value)
-              }}
-            >
-              Insert fruit
-            </button>
-            <button
-              onClick={({ from, to }) => {
-                move('fruits', from, to)
-              }}
-            >
-              Move fruit
-            </button>
-            <button onClick={() => pop('fruits')}>Remove the last fruit</button>
-            <button
-              onClick={({ value }) => {
-                mutators.push('fruits', value)
-              }}
-            >
-              Push fruit
-            </button>
-            <button
-              onClick={({ index }) => {
-                remove('fruits', index)
-              }}
-            >
-              Remove fruit
-            </button>
-            <button onClick={() => shift('fruits')}>Shift fruit</button>
-            <button
-              onClick={({ a, b }) => {
-                swap('fruits', a, b)
-              }}
-            >
-              Swap fruits
-            </button>
-            <button
-              onClick={({ index, value }) => {
-                update('fruits', index, value)
-              }}
-            >
-              Update fruit
-            </button>
-            <button
-              onClick={({ value }) => {
-                unshift('fruits', value)
-              }}
-            >
-              Unshift fruit
-            </button>
-          </Fragment>
+                ))}
+                <button
+                  onClick={({ index, value }) => {
+                    fields.insert(index, value)
+                  }}
+                >
+                  Insert fruit
+                </button>
+                <button
+                  onClick={({ from, to }) => {
+                    fields.move(from, to)
+                  }}
+                >
+                  Move fruit
+                </button>
+                <button onClick={() => fields.pop()}>
+                  Remove the last fruit
+                </button>
+                <button
+                  onClick={({ value }) => {
+                    fields.push(value)
+                  }}
+                >
+                  Push fruit
+                </button>
+                <button
+                  onClick={({ index }) => {
+                    fields.remove(index)
+                  }}
+                >
+                  Remove fruit
+                </button>
+                <button onClick={() => fields.shift()}>Shift fruit</button>
+                <button
+                  onClick={({ a, b }) => {
+                    fields.swap(a, b)
+                  }}
+                >
+                  Swap fruits
+                </button>
+                <button
+                  onClick={({ index, value }) => {
+                    fields.update(index, value)
+                  }}
+                >
+                  Update fruit
+                </button>
+                <button
+                  onClick={({ value }) => {
+                    fields.unshift(value)
+                  }}
+                >
+                  Unshift fruit
+                </button>
+              </Fragment>
+            )}
+          </FieldArray>
         )
       }}
     </Form>
@@ -438,7 +424,7 @@ describe('FieldArray', () => {
         // seed: 1882099238,
         examples: [
           // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
-          // [[new Move(1, 0), new ChangeValue(0, 'apple')]]
+          // https://github.com/final-form/react-final-form-arrays lacks `update` mutator documentation
         ]
       }
     )
