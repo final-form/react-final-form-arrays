@@ -1,5 +1,12 @@
 import React, { Fragment } from 'react'
 import TestUtils from 'react-dom/test-utils'
+import {
+  render,
+  fireEvent,
+  cleanup,
+  waitForElement
+} from 'react-testing-library'
+import fc from 'fast-check'
 import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
 import FieldArray from './FieldArray'
@@ -215,8 +222,8 @@ describe('FieldArray', () => {
 
   it('should allow field-level validation', async () => {
     const renderArray = jest.fn(() => <div />)
-    const validate = jest.fn(
-      value => (value.length > 2 ? 'Too long' : undefined)
+    const validate = jest.fn(value =>
+      value.length > 2 ? 'Too long' : undefined
     )
     const render = jest.fn(() => (
       <form>
@@ -603,3 +610,165 @@ describe('FieldArray', () => {
     expect(formRender.mock.calls[3][0]).toMatchObject({ pristine: false })
   })
 })
+
+describe('FieldArray properties', () => {
+  it.only('should work', async () => {
+    function ChangeCommand(index, newValue) {
+      return {
+        check: model => {
+          console.log('I run check', model, index)
+          // return true;
+          return model.values.length >= index
+        },
+        run: (model, real) => {
+          // abstract phase
+          model.values[index] = newValue
+
+          // real phase
+          const inputEl = real.getByTestId(`input${index}`)
+          fireEvent.focus(inputEl)
+          fireEvent.change(inputEl, { target: { value: newValue } })
+          fireEvent.blur(inputEl)
+        },
+        toString: () => `change input value on index ${index} to ${newValue}`
+      }
+    }
+
+    function AddFieldCommand() {
+      return {
+        check: () => true,
+        run: async (model, real) => {
+          model.push('')
+
+          const addButton = real.getByText('add a new field')
+          fireEvent.click(addButton)
+
+          const numberOfElementsInModel = model.length
+          await waitForElement(() =>
+            real.getByTestId(`input${numberOfElementsInModel - 1}`)
+          )
+
+          const allInputElements = real.queryAllByTestId('input', {
+            exact: false
+          })
+          const realValues = allInputElements.map(element => element.value)
+          // console.log(realValues);
+
+          real.debug()
+          expect(allInputElements.length).toBe(numberOfElementsInModel)
+        },
+        toString: () => 'Add a new field'
+      }
+    }
+
+    const allCommands = [
+      fc.constant(new AddFieldCommand()),
+      fc.nat(3).map(nat => {
+        // console.log(nat)
+        return new ChangeCommand(nat, 'abc')
+      })
+    ]
+
+    const generateRealSystem = () =>
+      render(
+        <Form
+          onSubmit={onSubmitMock}
+          mutators={arrayMutators}
+          initialValues={{ foo: [null] }}
+          render={({
+            form: {
+              mutators: { push }
+            }
+          }) => (
+            <React.Fragment>
+              <FieldArray name="foo">
+                {({ fields }) => (
+                  <div>
+                    {fields.map((name, i) => (
+                      <Field
+                        name={name}
+                        key={name}
+                        component="input"
+                        data-testid={`input${i}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </FieldArray>
+              <button onClick={() => push('foo', '')}>add a new field</button>
+            </React.Fragment>
+          )}
+        />
+      )
+
+    const realSystem = generateRealSystem()
+
+    const generateState = () => ({
+      model: [''],
+      real: generateRealSystem()
+    })
+
+    // const fieldCommand = new AddFieldCommand()
+    // await fieldCommand.run([], realSystem)
+
+    // const result = fc.sample(allCommands[1])
+    // console.log(result)
+
+    await fc.assert(
+      fc.asyncProperty(fc.commands(allCommands, 6), async commands => {
+        await fc.asyncModelRun(generateState, commands)
+        console.log('I am cleaning up')
+        cleanup()
+      }),
+      { numRuns: 2 }
+    )
+  })
+})
+
+const generateInitialState = () => {
+  // generate random values for random number of inputs
+}
+
+const initialState = generateInitialState()
+
+let model = {
+  state: initialState,
+  operations: {
+    handleChange: (state, index, newValue) => {
+      const newState = { ...state }
+      newState[index] = newValue
+      return newState
+    },
+    handleMove: (state, from, to) => {
+      if (from === to) return { ...state }
+      const valueToMove = state[from]
+      const stateWithoutElement = [
+        ...state.slice(0, from),
+        ...state.slice(from + 1)
+      ]
+      const newState = [
+        ...stateWithoutElement.slice(0, to),
+        valueToMove,
+        ...stateWithoutElement.slice(to)
+      ]
+      return newState
+    }
+  }
+}
+
+let avaliableCommands = {
+  change: {
+    preconditions: state => {},
+    valuesGenerator: () => {},
+    postconditions: state => {}
+  },
+  move: {
+    preconditions: state => {},
+    valuesGenerator: () => {},
+    postconditions: state => {}
+  }
+}
+
+// sources
+// https://propertesting.com/book_stateful_properties.html
+// https://hypothesis.readthedocs.io/en/latest/stateful.html

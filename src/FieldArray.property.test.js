@@ -75,10 +75,7 @@ describe('FieldArray', () => {
       const realValues = [...inputElements.values()].map(
         element => element.value
       )
-      realValues.forEach((realValue, index) => {
-        const modelValue = Model[index]
-        expect(realValue).toBe(modelValue)
-      })
+      expect(realValues).toEqual(Model)
     }
 
     const commands = {
@@ -165,16 +162,17 @@ describe('FieldArray', () => {
           fc.commands([
             fc.constant(new commands.AddField()),
             fc
-              .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS), fc.string())
+              .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
               .map(args => new commands.ChangeValue(...args)),
             fc
               .tuple(
-                fc.nat(INITIAL_NUMBER_OF_FIELDS),
-                fc.nat(INITIAL_NUMBER_OF_FIELDS)
+                fc.nat(INITIAL_NUMBER_OF_FIELDS * 2),
+                fc.nat(INITIAL_NUMBER_OF_FIELDS * 2)
               )
               .map(args => new commands.Move(...args))
           ]),
           async commands => {
+            console.log(commands)
             const getInitialState = async () => {
               const { Model, DOM } = await setup()
               return {
@@ -188,7 +186,13 @@ describe('FieldArray', () => {
         .afterEach(cleanup),
       {
         numRuns: 100,
-        verbose: true
+        verbose: true,
+        // seed: 1842023377,
+        // seed: 1842107356,
+        examples: [
+          // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
+          [[new commands.Move(1, 0), new commands.ChangeValue(0, 'apple')]]
+        ]
       }
     )
   })
