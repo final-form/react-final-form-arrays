@@ -12,13 +12,13 @@ const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
 const getDefaultFieldState = () => ({
   value: '',
-  dirty: false,
+  pristine: true,
   touched: false
 })
 const setup = async () => {
   const Input = ({ input, meta, ...restProps }) => {
     const dataAttrs = {
-      'data-dirty': meta.dirty,
+      'data-pristine': meta.pristine,
       'data-touched': meta.touched
     }
     return <input {...input} {...dataAttrs} {...restProps} />
@@ -95,6 +95,35 @@ const correctValues = (Model, DOM) => {
   expect(realValues).toEqual(modelValues)
 }
 
+const correctMetadata = (Model, DOM) => {
+  const inputElements = selectAllInputs(DOM)
+  const realMetadata = [...inputElements].map(
+    ({ dataset: { pristine, touched } }) => ({
+      pristine,
+      touched
+    })
+  )
+  const modelMetadata = Model.map(
+    ({ value, ...fieldMetadata }) => fieldMetadata
+  ).map(fieldMetadata => {
+    // data attributes in DOM are string
+    // so transform these bools to strings
+    // for comparison purposes
+    let modifiedObject = {}
+    Object.keys(fieldMetadata).forEach(property => {
+      modifiedObject[property] = String(fieldMetadata[property])
+    })
+    return modifiedObject
+  })
+  expect(realMetadata).toEqual(modelMetadata)
+}
+
+const validateAttributes = (Model, DOM) => {
+  correctNumberOfInputs(Model, DOM)
+  correctValues(Model, DOM)
+  correctMetadata(Model, DOM)
+}
+
 class AddField {
   static generate = () => fc.constant(new commands.AddField())
   toString = () => 'add field'
@@ -107,8 +136,7 @@ class AddField {
     fireEvent.click(buttonEl)
     await waitForFormToRerender()
     // postconditions
-    correctNumberOfInputs(Model, DOM)
-    correctValues(Model, DOM)
+    validateAttributes(Model, DOM)
   }
 }
 
@@ -128,14 +156,22 @@ class ChangeValue {
   }
   run = (Model, DOM) => {
     // abstract
-    Model[this.index].value = this.newValue
+    const DEFAULT_FIELD_STATE = getDefaultFieldState()
+    const pristine = this.newValue === DEFAULT_FIELD_STATE.value
+    Model[this.index] = {
+      ...DEFAULT_FIELD_STATE,
+      value: this.newValue,
+      touched: true,
+      pristine
+    }
     // real
     const label = `Fruit ${this.index + 1} name`
     const inputEl = DOM.getByLabelText(label)
+    fireEvent.focus(inputEl)
     fireEvent.change(inputEl, { target: { value: this.newValue } })
+    fireEvent.blur(inputEl)
     // postconditions
-    correctNumberOfInputs(Model, DOM)
-    correctValues(Model, DOM)
+    validateAttributes(Model, DOM)
   }
 }
 
@@ -169,8 +205,7 @@ class Move {
     })
     await waitForFormToRerender()
     // postconditions
-    correctNumberOfInputs(Model, DOM)
-    correctValues(Model, DOM)
+    validateAttributes(Model, DOM)
   }
 }
 
@@ -190,7 +225,8 @@ class Insert {
     const indexOfTheNewElement = Math.min(Model.length, this.index)
     Model.splice(indexOfTheNewElement, 0, {
       ...getDefaultFieldState(),
-      value: this.value
+      value: this.value,
+      pristine: this.value === undefined
     })
     // real
     const buttonEl = DOM.getByText('Insert fruit')
@@ -200,8 +236,7 @@ class Insert {
     })
     await waitForFormToRerender()
     // postconditions
-    correctNumberOfInputs(Model, DOM)
-    correctValues(Model, DOM)
+    validateAttributes(Model, DOM)
   }
 }
 
@@ -219,8 +254,7 @@ class Pop {
     await waitForFormToRerender()
 
     // postconditions
-    correctNumberOfInputs(Model, DOM)
-    correctValues(Model, DOM)
+    validateAttributes(Model, DOM)
   }
 }
 
@@ -235,7 +269,7 @@ const commands = {
 const generateCommands = [
   commands.AddField.generate(),
   commands.ChangeValue.generate(),
-  // commands.Move.generate(),
+  commands.Move.generate(),
   commands.Insert.generate(),
   commands.Pop.generate()
 ]
@@ -261,10 +295,11 @@ describe('FieldArray', () => {
         verbose: true,
         // seed: 1842023377,
         // seed: 1842107356,
+        // seed: 1881850827,
+        // seed: 1882099238,
         examples: [
           // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
           // [[new commands.Move(1, 0), new commands.ChangeValue(0, 'apple')]]
-          // form is not pristine after inserting
         ]
       }
     )
