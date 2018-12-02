@@ -28,7 +28,17 @@ const setup = async () => {
       {({
         form: {
           mutators,
-          mutators: { push, move, insert, pop, remove, shift, swap, update }
+          mutators: {
+            push,
+            move,
+            insert,
+            pop,
+            remove,
+            shift,
+            swap,
+            update,
+            unshift
+          }
         }
       }) => {
         return (
@@ -88,6 +98,13 @@ const setup = async () => {
             >
               Update fruit
             </button>
+            <button
+              onClick={({ value }) => {
+                unshift('fruits', value)
+              }}
+            >
+              Unshift fruit
+            </button>
           </Fragment>
         )
       }}
@@ -131,7 +148,7 @@ class ChangeValue {
     fc
       .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
       .map(args => new ChangeValue(...args))
-  toString = () => ` change value at ${this.index} to ${this.newValue}`
+  toString = () => ` change value at ${this.index} to '${this.newValue}'`
   check = Model => {
     if (this.index >= Model.length) return false
     return true
@@ -194,7 +211,7 @@ class Insert {
     fc
       .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
       .map(args => new Insert(...args))
-  toString = () => ` insert(${this.index}, ${this.value})`
+  toString = () => ` insert(${this.index}, '${this.value}')`
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -236,7 +253,7 @@ class Push {
     this.value = value
   }
   static generate = () => fc.option(fc.string()).map(value => new Push(value))
-  toString = () => ` push(${this.value})`
+  toString = () => ` push('${this.value}')`
   check = () => true
   run = async (Model, DOM) => {
     // abstract
@@ -339,7 +356,7 @@ class Update {
     fc
       .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS * 2), fc.string())
       .map(args => new Update(...args))
-  toString = () => ` update(${this.index}, ${this.newValue})`
+  toString = () => ` update(${this.index}, '${this.newValue}')`
   check = Model => {
     if (this.index >= Model.length) return false
     return true
@@ -360,6 +377,29 @@ class Update {
   }
 }
 
+class Unshift {
+  constructor(value) {
+    this.value = value
+  }
+  static generate = () =>
+    fc.option(fc.string()).map(value => new Unshift(value))
+  toString = () => ` unshift('${this.value}')`
+  check = () => true
+  run = async (Model, DOM) => {
+    // abstract
+    Model.unshift(getFieldState({ value: this.value }))
+
+    // real
+    const buttonEl = DOM.getByText('Unshift fruit')
+    TestUtils.Simulate.click(buttonEl, {
+      value: this.value
+    })
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
 const generateCommands = [
   ChangeValue.generate(),
   // Insert.generate()
@@ -367,9 +407,9 @@ const generateCommands = [
   Pop.generate(),
   // Push.generate(),
   Remove.generate()
-  // Shift.generate()
-  // Swap.generate()
-  // Update.generate()
+  // Shift.generate(),
+  // Swap.generate(),
+  // Update.generate(),
   // Unshift.generate()
 ]
 
