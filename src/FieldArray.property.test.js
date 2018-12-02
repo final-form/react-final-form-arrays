@@ -1,15 +1,17 @@
 import React, { Fragment } from 'react'
 import TestUtils from 'react-dom/test-utils'
-import { render, fireEvent } from 'react-testing-library'
+import { render, fireEvent, cleanup } from 'react-testing-library'
 import { Form, Field } from 'react-final-form'
 import { FieldArray } from 'react-final-form-arrays'
 import arrayMutators from 'final-form-arrays'
+import fc from 'fast-check'
 
 const nope = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
-const setup = () =>
-  render(
+const INITIAL_NUMBER_OF_FIELDS = 2
+const setup = async () => {
+  const DOM = render(
     <Form onSubmit={nope} mutators={arrayMutators}>
       {({
         form: {
@@ -48,20 +50,28 @@ const setup = () =>
     </Form>
   )
 
+  const Model = []
+
+  const buttonEl = DOM.getByText('Add fruit')
+  ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
+    fireEvent.click(buttonEl)
+    Model.push('')
+  })
+  await waitForFormToRerender()
+  return { DOM, Model }
+}
+
 describe('FieldArray', () => {
   it('should work', async () => {
-    const DOM = setup()
-    const Model = []
+    const selectAllInputs = DOM => DOM.container.querySelectorAll('input')
 
-    const selectAllInputs = () => DOM.container.querySelectorAll('input')
-
-    const correctNumberOfInputs = () => {
-      const inputElements = selectAllInputs()
+    const correctNumberOfInputs = (Model, DOM) => {
+      const inputElements = selectAllInputs(DOM)
       expect(inputElements.length).toBe(Model.length)
     }
 
-    const correctValues = () => {
-      const inputElements = selectAllInputs()
+    const correctValues = (Model, DOM) => {
+      const inputElements = selectAllInputs(DOM)
       const realValues = [...inputElements.values()].map(
         element => element.value
       )
@@ -72,80 +82,114 @@ describe('FieldArray', () => {
     }
 
     const commands = {
-      addField: {
-        preconditions: () => true,
-        run: async () => {
-          // abstract
-          Model.push('')
-          // real
-          const buttonEl = DOM.getByText('Add fruit')
-          fireEvent.click(buttonEl)
-          await waitForFormToRerender()
-        },
-        postconditions: () => {
-          correctNumberOfInputs()
-          correctValues()
-        }
-      },
-      changeValue: {
-        preconditions: (index, newValue) => {
-          if (index >= Model.length) return false
-          return true
-        },
-        run: (index, newValue) => {
-          // abstract
-          Model[index] = newValue
-          // real
-          const label = `Fruit ${index + 1} name`
-          const inputEl = DOM.getByLabelText(label)
-          fireEvent.change(inputEl, { target: { value: newValue } })
-        },
-        postconditions: () => {
-          correctNumberOfInputs()
-          correctValues()
-        }
-      },
-      move: {
-        preconditions: (from, to) => {
-          if (from >= Model.length || to >= Model.length) return false
-          return true
-        },
-        run: async (from, to) => {
-          // abstract
-          const cache = Model[from]
-          Model.splice(from, 1)
-          Model.splice(to, 0, cache)
-          // real
-          const buttonEl = DOM.getByText('Move fruit')
-          TestUtils.Simulate.keyPress(buttonEl, { which: from, location: to })
-          await waitForFormToRerender()
-        },
-        postconditions: () => {
-          correctNumberOfInputs()
-          correctValues()
-        }
-      }
-    }
-
-    function execute(command) {
-      return {
-        with: async (...args) => {
-          if (!command.preconditions(...args)) {
-            throw Error('command cannot be executed');
+      AddField: function addField() {
+        return {
+          toString: () => 'add field',
+          check: () => true,
+          run: async (Model, DOM) => {
+            // abstract
+            Model.push('')
+            // real
+            const buttonEl = DOM.getByText('Add fruit')
+            fireEvent.click(buttonEl)
+            await waitForFormToRerender()
+            // postconditions
+            correctNumberOfInputs(Model, DOM)
+            correctValues(Model, DOM)
           }
-          await command.run(...args)
-          command.postconditions(...args)
+        }
+      },
+      ChangeValue: function ChangeValue(index, newValue) {
+        return {
+          toString: () => `change value at ${index} to ${newValue}`,
+          check: Model => {
+            if (index >= Model.length) return false
+            return true
+          },
+          run: (Model, DOM) => {
+            // abstract
+            Model[index] = newValue
+            // real
+            const label = `Fruit ${index + 1} name`
+            const inputEl = DOM.getByLabelText(label)
+            fireEvent.change(inputEl, { target: { value: newValue } })
+            // postconditions
+            correctNumberOfInputs(Model, DOM)
+            correctValues(Model, DOM)
+          }
+        }
+      },
+      Move: function Move(from, to) {
+        return {
+          toString: () => `move ${from} to ${to}`,
+          check: Model => {
+            if (from >= Model.length || to >= Model.length) return false
+            return true
+          },
+          run: async (Model, DOM) => {
+            // abstract
+            const cache = Model[from]
+            Model.splice(from, 1)
+            Model.splice(to, 0, cache)
+            // real
+            const buttonEl = DOM.getByText('Move fruit')
+            TestUtils.Simulate.keyPress(buttonEl, { which: from, location: to })
+            await waitForFormToRerender()
+            // postconditions
+            correctNumberOfInputs(Model, DOM)
+            correctValues(Model, DOM)
+          }
         }
       }
     }
 
-    await execute(commands.addField).with()
-    await execute(commands.changeValue).with(0, 'apple')
-    await execute(commands.addField).with()
-    await execute(commands.changeValue).with(1, 'banana')
-    await execute(commands.move).with(0, 1)
-    await execute(commands.changeValue).with(0, 'orange')
+    const genericModelRun = async (setup, commands, initialValue, then) => {
+      const { model, real } = await setup()
+      let state = initialValue
+      for (const c of commands) {
+        state = then(state, () => {
+          if (c.check(model)) return c.run(model, real)
+        })
+      }
+      return state
+    }
 
-    DOM.unmount()
+    const asyncModelRun = (setup, commands) => {
+      const then = (p, c) => p.then(c)
+      return genericModelRun(setup, commands, Promise.resolve(), then)
+    }
+
+    await fc.assert(
+      fc
+        .asyncProperty(
+          fc.commands([
+            fc.constant(new commands.AddField()),
+            fc
+              .tuple(fc.nat(INITIAL_NUMBER_OF_FIELDS), fc.string())
+              .map(args => new commands.ChangeValue(...args)),
+            fc
+              .tuple(
+                fc.nat(INITIAL_NUMBER_OF_FIELDS),
+                fc.nat(INITIAL_NUMBER_OF_FIELDS)
+              )
+              .map(args => new commands.Move(...args))
+          ]),
+          async commands => {
+            const getInitialState = async () => {
+              const { Model, DOM } = await setup()
+              return {
+                model: Model,
+                real: DOM
+              }
+            }
+            await asyncModelRun(getInitialState, commands)
+          }
+        )
+        .afterEach(cleanup),
+      {
+        numRuns: 100,
+        verbose: true
+      }
+    )
   })
 })
