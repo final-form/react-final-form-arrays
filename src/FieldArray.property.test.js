@@ -29,7 +29,7 @@ const setup = async () => {
       {({
         form: {
           mutators,
-          mutators: { push, move, insert, pop, remove, shift }
+          mutators: { push, move, insert, pop, remove, shift, swap }
         }
       }) => {
         return (
@@ -74,6 +74,13 @@ const setup = async () => {
               Remove fruit
             </button>
             <button onClick={() => shift('fruits')}>Shift fruit</button>
+            <button
+              onKeyPress={e => {
+                swap('fruits', e.which, e.location)
+              }}
+            >
+              Swap fruits
+            </button>
           </Fragment>
         )
       }}
@@ -321,14 +328,51 @@ class Shift {
   }
 }
 
+class Swap {
+  constructor(a, b) {
+    this.a = a
+    this.b = b
+  }
+  static generate = () =>
+    fc
+      .tuple(
+        fc.nat(INITIAL_NUMBER_OF_FIELDS * 2),
+        fc.nat(INITIAL_NUMBER_OF_FIELDS * 2)
+      )
+      .map(args => new Swap(...args))
+  toString = () => ` swap(${this.a}, ${this.b})`
+  check = Model => {
+    if (this.a >= Model.length || this.b >= Model.length) return false
+    return true
+  }
+  run = async (Model, DOM) => {
+    // abstract
+    const cache = Model[this.a]
+    Model[this.a] = Model[this.b]
+    Model[this.b] = cache
+    // real
+    const buttonEl = DOM.getByText('Swap fruits')
+    TestUtils.Simulate.keyPress(buttonEl, {
+      which: this.a,
+      location: this.b
+    })
+    await waitForFormToRerender()
+    // postconditions
+    validateAttributes(Model, DOM)
+  }
+}
+
 const generateCommands = [
   ChangeValue.generate(),
-  // Move.generate(),
   // Insert.generate(),
+  // Move.generate(),
   Pop.generate(),
   // Push.generate()
   Remove.generate()
   // Shift.generate()
+  // Swap.generate()
+  // Update.generate()
+  // Unshift.generate()
 ]
 
 const getInitialState = async () => {
