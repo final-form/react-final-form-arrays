@@ -10,11 +10,15 @@ const nope = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
-const getFieldState = ({ value = '', touched = false } = {}) => {
-  const pristine = value === ''
-  return { value: value || '', pristine, touched }
+const getFieldState = ({
+  value = '',
+  touched = false,
+  initialValue = ''
+} = {}) => {
+  const pristine = value === initialValue
+  return { value: value || '', pristine, touched, initialValue }
 }
-const setup = async () => {
+const setup = async ({ initialValues }) => {
   const Input = ({ input, meta, ...restProps }) => {
     const dataAttrs = {
       'data-pristine': meta.pristine,
@@ -24,7 +28,11 @@ const setup = async () => {
   }
 
   const DOM = render(
-    <Form onSubmit={nope} mutators={arrayMutators}>
+    <Form
+      onSubmit={nope}
+      initialValues={initialValues}
+      mutators={arrayMutators}
+    >
       {() => {
         return (
           <FieldArray name="fruits">
@@ -97,14 +105,17 @@ const setup = async () => {
     </Form>
   )
 
-  const Model = []
+  const Model = (initialValues.fruits || []).map(value =>
+    getFieldState({ value, initialValue: value })
+  )
+  // console.log(Model)
 
-  const buttonEl = DOM.getByText('Push fruit')
-  ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
-    TestUtils.Simulate.click(buttonEl)
-    Model.push(getFieldState())
-  })
-  await waitForFormToRerender()
+  // const buttonEl = DOM.getByText('Push fruit')
+  // ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
+  //   TestUtils.Simulate.click(buttonEl)
+  //   Model.push(getFieldState())
+  // })
+  // await waitForFormToRerender()
   return { DOM, Model }
 }
 const selectAllInputs = DOM => DOM.container.querySelectorAll('input')
@@ -118,7 +129,10 @@ const realMatchesModel = (Model, DOM) => {
       touched: touched === 'true'
     })
   )
-  expect(realMetadata).toEqual(Model)
+  const formattedModelData = Model.map(
+    ({ initialValue, ...restData }) => restData
+  )
+  expect(realMetadata).toEqual(formattedModelData)
 }
 
 const validateAttributes = (Model, DOM) => {
@@ -141,7 +155,11 @@ class ChangeValue {
   }
   run = (Model, DOM) => {
     // abstract
-    Model[this.index] = getFieldState({ value: this.newValue, touched: true })
+    Model[this.index] = getFieldState({
+      value: this.newValue,
+      touched: true,
+      initialValue: Model[this.index].initialValue
+    })
 
     // real
     const label = `Fruit ${this.index + 1} name`
@@ -399,21 +417,28 @@ const generateCommands = [
   // Unshift.generate()
 ]
 
-const getInitialState = async () => {
-  const { Model, DOM } = await setup()
+const getInitialState = initialValues => async () => {
+  const { Model, DOM } = await setup({ initialValues })
   return {
     model: Model,
     real: DOM
   }
 }
 
+const initialValues = fc.record({ fruits: fc.option(fc.array(fc.string())) })
+
 describe('FieldArray', () => {
   it('should work', async () => {
     await fc.assert(
       fc
-        .asyncProperty(fc.commands(generateCommands), async commands => {
-          await fc.asyncModelRun(getInitialState, commands)
-        })
+        .asyncProperty(
+          fc.commands(generateCommands),
+          initialValues,
+          async (commands, initialValues) => {
+            const stateBuilder = getInitialState(initialValues)
+            await fc.asyncModelRun(stateBuilder, commands)
+          }
+        )
         .afterEach(cleanup),
       {
         numRuns: 100,
