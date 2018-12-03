@@ -603,7 +603,3 @@ describe('FieldArray', () => {
     expect(formRender.mock.calls[3][0]).toMatchObject({ pristine: false })
   })
 })
-
-// sources
-// https://propertesting.com/book_stateful_properties.html
-// https://hypothesis.readthedocs.io/en/latest/stateful.html
