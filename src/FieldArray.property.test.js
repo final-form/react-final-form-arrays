@@ -18,6 +18,112 @@ const getFieldState = ({
   const pristine = value === initialValue
   return { value: value || '', pristine, touched, initialValue }
 }
+const modifyFieldState = ({ Model, index, newState = {} }) => {
+  const initialValueForThisField = Model.initialValues[index]
+  const value = newState.value === undefined ? '' : newState.value
+  const pristine = value === initialValueForThisField
+  const touched = newState.touched || false
+  Model.fields[index] = {
+    value,
+    pristine,
+    touched
+  }
+  Model.initialValues.forEach((initialValue, index) => {
+    const field = Model.fields[index]
+    field.pristine = field.value === initialValue
+  })
+}
+
+class ModelConstruct {
+  constructor(initialValues) {
+    this.state = {
+      initialValues: initialValues || [],
+      fields: (initialValues || []).map(value => ({
+        value,
+        touched: false,
+        pristine: true
+      }))
+    }
+  }
+
+  getFieldsState() {
+    return this.state.fields
+  }
+
+  getFieldsLength() {
+    return this.state.fields.length
+  }
+
+  recalculatePristine() {
+    ;(this.state.fields || []).forEach((fieldState, index) => {
+      const initialValue = this.state.initialValues[index] || ''
+      fieldState.pristine = fieldState.value === initialValue
+    })
+  }
+
+  changeValue(index, newValue) {
+    this.state.fields[index] = {
+      value: newValue,
+      touched: true
+    }
+    this.recalculatePristine()
+  }
+
+  insert(index, value) {
+    const indexOfTheNewElement = Math.min(this.state.fields.length, index)
+    this.state.fields.splice(indexOfTheNewElement, 0, {
+      value,
+      touched: false
+    })
+    this.recalculatePristine()
+  }
+
+  move(from, to) {
+    const cache = this.state.fields[from]
+    this.state.fields.splice(from, 1)
+    this.state.fields.splice(to, 0, cache)
+    this.recalculatePristine()
+  }
+
+  pop() {
+    this.state.fields.pop()
+    this.recalculatePristine()
+  }
+
+  push(value) {
+    this.state.fields.push({ value: value || '', touched: false })
+    this.recalculatePristine()
+  }
+
+  remove(index) {
+    this.state.fields.splice(index, 1)
+    this.recalculatePristine()
+  }
+
+  shift() {
+    this.state.fields.shift()
+    this.recalculatePristine()
+  }
+
+  swap(a, b) {
+    const cache = this.state.fields[a]
+    this.state.fields[a] = this.state.fields[b]
+    this.state.fields[b] = cache
+    this.recalculatePristine()
+  }
+
+  update(index, newValue) {
+    const field = this.state.fields[index]
+    this.state.fields[index] = { value: newValue, touched: field.touched }
+    this.recalculatePristine()
+  }
+
+  unshift(value) {
+    this.state.fields.unshift({ value, touched: false })
+    this.recalculatePristine()
+  }
+}
+
 const setup = async ({ initialValues }) => {
   const Input = ({ input, meta, ...restProps }) => {
     const dataAttrs = {
@@ -105,17 +211,7 @@ const setup = async ({ initialValues }) => {
     </Form>
   )
 
-  const Model = (initialValues.fruits || []).map(value =>
-    getFieldState({ value, initialValue: value })
-  )
-  // console.log(Model)
-
-  // const buttonEl = DOM.getByText('Push fruit')
-  // ;[...Array(INITIAL_NUMBER_OF_FIELDS)].forEach(() => {
-  //   TestUtils.Simulate.click(buttonEl)
-  //   Model.push(getFieldState())
-  // })
-  // await waitForFormToRerender()
+  const Model = new ModelConstruct(initialValues.fruits)
   return { DOM, Model }
 }
 const selectAllInputs = DOM => DOM.container.querySelectorAll('input')
@@ -129,10 +225,7 @@ const realMatchesModel = (Model, DOM) => {
       touched: touched === 'true'
     })
   )
-  const formattedModelData = Model.map(
-    ({ initialValue, ...restData }) => restData
-  )
-  expect(realMetadata).toEqual(formattedModelData)
+  expect(realMetadata).toEqual(Model.getFieldsState())
 }
 
 const validateAttributes = (Model, DOM) => {
@@ -150,16 +243,12 @@ class ChangeValue {
       .map(args => new ChangeValue(...args))
   toString = () => ` change value at ${this.index} to '${this.newValue}'`
   check = Model => {
-    if (this.index >= Model.length) return false
+    if (this.index >= Model.getFieldsLength()) return false
     return true
   }
   run = (Model, DOM) => {
     // abstract
-    Model[this.index] = getFieldState({
-      value: this.newValue,
-      touched: true,
-      initialValue: Model[this.index].initialValue
-    })
+    Model.changeValue(this.index, this.newValue)
 
     // real
     const label = `Fruit ${this.index + 1} name`
@@ -186,14 +275,14 @@ class Move {
       .map(args => new Move(...args))
   toString = () => ` move(${this.from}, ${this.to})`
   check = Model => {
-    if (this.from >= Model.length || this.to >= Model.length) return false
+    const length = Model.getFieldsLength()
+    if (this.from >= length || this.to >= length) return false
     return true
   }
   run = async (Model, DOM) => {
     // abstract
-    const cache = Model[this.from]
-    Model.splice(this.from, 1)
-    Model.splice(this.to, 0, cache)
+    Model.move(this.from, this.to)
+
     // real
     const buttonEl = DOM.getByText('Move fruit')
     TestUtils.Simulate.click(buttonEl, {
@@ -201,6 +290,7 @@ class Move {
       to: this.to
     })
     await waitForFormToRerender()
+
     // postconditions
     validateAttributes(Model, DOM)
   }
@@ -219,8 +309,7 @@ class Insert {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    const indexOfTheNewElement = Math.min(Model.length, this.index)
-    Model.splice(indexOfTheNewElement, 0, getFieldState({ value: this.value }))
+    Model.insert(this.index, this.value)
 
     // real
     const buttonEl = DOM.getByText('Insert fruit')
@@ -261,7 +350,7 @@ class Push {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    Model.push(getFieldState({ value: this.value }))
+    Model.push(this.value)
 
     // real
     const buttonEl = DOM.getByText('Push fruit')
@@ -287,7 +376,7 @@ class Remove {
   }
   run = async (Model, DOM) => {
     // abstract
-    Model.splice(this.index, 1)
+    Model.remove(this.index)
 
     // real
     const buttonEl = DOM.getByText('Remove fruit')
@@ -331,14 +420,14 @@ class Swap {
       .map(args => new Swap(...args))
   toString = () => ` swap(${this.a}, ${this.b})`
   check = Model => {
-    if (this.a >= Model.length || this.b >= Model.length) return false
+    const length = Model.getFieldsLength()
+    if (this.a >= length || this.b >= length) return false
     return true
   }
   run = async (Model, DOM) => {
     // abstract
-    const cache = Model[this.a]
-    Model[this.a] = Model[this.b]
-    Model[this.b] = cache
+    Model.swap(this.a, this.b)
+
     // real
     const buttonEl = DOM.getByText('Swap fruits')
     TestUtils.Simulate.click(buttonEl, {
@@ -362,12 +451,12 @@ class Update {
       .map(args => new Update(...args))
   toString = () => ` update(${this.index}, '${this.newValue}')`
   check = Model => {
-    if (this.index >= Model.length) return false
+    if (this.index >= Model.getFieldsLength()) return false
     return true
   }
   run = async (Model, DOM) => {
     // abstract
-    Model[this.index] = getFieldState({ value: this.newValue, touched: true })
+    Model.update(this.index, this.newValue)
 
     // real
     const buttonEl = DOM.getByText('Update fruit')
@@ -391,7 +480,7 @@ class Unshift {
   check = () => true
   run = async (Model, DOM) => {
     // abstract
-    Model.unshift(getFieldState({ value: this.value }))
+    Model.unshift(this.value)
 
     // real
     const buttonEl = DOM.getByText('Unshift fruit')
@@ -405,16 +494,16 @@ class Unshift {
 }
 
 const generateCommands = [
-  ChangeValue.generate(),
-  // Insert.generate()
+  ChangeValue.generate()
+  // Insert.generate(),
   // Move.generate(),
-  Pop.generate(),
+  // Pop.generate(),
   // Push.generate(),
-  Remove.generate()
+  // Remove.generate(),
   // Shift.generate(),
   // Swap.generate(),
   // Update.generate(),
-  // Unshift.generate()
+  // Unshift.generate(),
 ]
 
 const getInitialState = initialValues => async () => {
