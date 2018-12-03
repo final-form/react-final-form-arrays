@@ -63,7 +63,7 @@ class ModelConstruct {
 
   changeValue(index, newValue) {
     this.state.fields[index] = {
-      value: newValue,
+      value: newValue || '',
       touched: true
     }
     this.recalculatePristine()
@@ -72,7 +72,7 @@ class ModelConstruct {
   insert(index, value) {
     const indexOfTheNewElement = Math.min(this.state.fields.length, index)
     this.state.fields.splice(indexOfTheNewElement, 0, {
-      value,
+      value: value || '',
       touched: false
     })
     this.recalculatePristine()
@@ -114,12 +114,12 @@ class ModelConstruct {
 
   update(index, newValue) {
     const field = this.state.fields[index]
-    this.state.fields[index] = { value: newValue, touched: field.touched }
+    this.state.fields[index] = { value: newValue || '', touched: field.touched }
     this.recalculatePristine()
   }
 
   unshift(value) {
-    this.state.fields.unshift({ value, touched: false })
+    this.state.fields.unshift({ value: value || '', touched: false })
     this.recalculatePristine()
   }
 }
@@ -494,16 +494,16 @@ class Unshift {
 }
 
 const generateCommands = [
-  ChangeValue.generate()
+  ChangeValue.generate(),
   // Insert.generate(),
   // Move.generate(),
-  // Pop.generate(),
+  Pop.generate(),
   // Push.generate(),
   // Remove.generate(),
   // Shift.generate(),
   // Swap.generate(),
-  // Update.generate(),
-  // Unshift.generate(),
+  Update.generate()
+  // Unshift.generate()
 ]
 
 const getInitialState = initialValues => async () => {
@@ -532,10 +532,6 @@ describe('FieldArray', () => {
       {
         numRuns: 100,
         verbose: true,
-        // seed: 1842023377,
-        // seed: 1842107356,
-        // seed: 1881850827,
-        // seed: 1882099238,
         examples: [
           // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
           // https://github.com/final-form/react-final-form-arrays lacks `update` mutator documentation
