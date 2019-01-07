@@ -49,13 +49,20 @@ export default {
     },
     output
   ),
-  external: [
-    'react',
-    'prop-types',
-    'final-form',
-    'react-final-form',
-    'react-lifecycles-compat'
-  ],
+  external: id => {
+    const externals = [
+      'react',
+      'prop-types',
+      'final-form',
+      'react-final-form',
+      'react-lifecycles-compat'
+    ]
+
+    const isBabelRuntime = id.startsWith('@babel/runtime')
+    const isStaticExternal = externals.indexOf(id) > -1
+
+    return isBabelRuntime || isStaticExternal
+  },
   plugins: [
     resolve({ jsnext: true, main: true }),
     flow(),
@@ -76,6 +83,7 @@ export default {
       ],
       plugins: [
         '@babel/plugin-transform-flow-strip-types',
+        '@babel/plugin-transform-runtime',
         '@babel/plugin-syntax-dynamic-import',
         '@babel/plugin-syntax-import-meta',
         '@babel/plugin-proposal-class-properties',
@@ -90,7 +98,8 @@ export default {
         '@babel/plugin-proposal-export-namespace-from',
         '@babel/plugin-proposal-numeric-separator',
         '@babel/plugin-proposal-throw-expressions'
-      ]
+      ],
+      runtimeHelpers: true
     }),
     umd
       ? replace({
