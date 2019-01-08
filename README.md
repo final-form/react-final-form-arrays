@@ -264,6 +264,10 @@ returned.
 
 A function to swap two values in the array.
 
+#### `fields.update: (name: string, index: number, value: any) => void`
+
+A function to update a value at the specified index of the array.
+
 #### `fields.unshift: (value: any) => void`
 
 A function to add a value to the beginning of the array.
