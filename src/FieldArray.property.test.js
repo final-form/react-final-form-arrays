@@ -10,29 +10,6 @@ const nope = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
-const getFieldState = ({
-  value = '',
-  touched = false,
-  initialValue = ''
-} = {}) => {
-  const pristine = value === initialValue
-  return { value: value || '', pristine, touched, initialValue }
-}
-const modifyFieldState = ({ Model, index, newState = {} }) => {
-  const initialValueForThisField = Model.initialValues[index]
-  const value = newState.value === undefined ? '' : newState.value
-  const pristine = value === initialValueForThisField
-  const touched = newState.touched || false
-  Model.fields[index] = {
-    value,
-    pristine,
-    touched
-  }
-  Model.initialValues.forEach((initialValue, index) => {
-    const field = Model.fields[index]
-    field.pristine = field.value === initialValue
-  })
-}
 
 class ModelConstruct {
   constructor(initialValues) {
@@ -495,15 +472,15 @@ class Unshift {
 
 const generateCommands = [
   ChangeValue.generate(),
-  // Insert.generate(),
-  // Move.generate(),
+  Insert.generate(),
+  Move.generate(),
   Pop.generate(),
-  // Push.generate(),
-  // Remove.generate(),
-  // Shift.generate(),
-  // Swap.generate(),
-  Update.generate()
-  // Unshift.generate()
+  Push.generate(),
+  Remove.generate(),
+  Shift.generate(),
+  Swap.generate(),
+  Update.generate(),
+  Unshift.generate()
 ]
 
 const getInitialState = initialValues => async () => {
@@ -528,15 +505,7 @@ describe('FieldArray', () => {
             await fc.asyncModelRun(stateBuilder, commands)
           }
         )
-        .afterEach(cleanup),
-      {
-        numRuns: 100,
-        verbose: true,
-        examples: [
-          // https://github.com/final-form/final-form-arrays/issues/15#issuecomment-442126496
-          // https://github.com/final-form/react-final-form-arrays lacks `update` mutator documentation
-        ]
-      }
+        .afterEach(cleanup)
     )
   })
 })
