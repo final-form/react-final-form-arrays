@@ -32,6 +32,13 @@ if (es) {
   throw new Error('no format specified. --environment FORMAT:xxx')
 }
 
+const globals = {
+  react: 'React',
+  'final-form': 'FinalForm',
+  'react-final-form': 'ReactFinalForm',
+  'react-lifecycles-compat': 'ReactLifecyclesCompat'
+}
+
 // eslint-disable-next-line no-nested-ternary
 export default {
   input: 'src/index.js',
@@ -39,28 +46,13 @@ export default {
     {
       name: 'react-final-form-arrays',
       exports: 'named',
-      globals: {
-        react: 'React',
-        'prop-types': 'PropTypes',
-        'final-form': 'FinalForm',
-        'react-final-form': 'ReactFinalForm',
-        'react-lifecycles-compat': 'ReactLifecyclesCompat'
-      }
+      globals
     },
     output
   ),
   external: id => {
-    const externals = [
-      'react',
-      'prop-types',
-      'final-form',
-      'react-final-form',
-      'react-lifecycles-compat'
-    ]
-
     const isBabelRuntime = id.startsWith('@babel/runtime')
-    const isStaticExternal = externals.indexOf(id) > -1
-
+    const isStaticExternal = globals[id]
     return isBabelRuntime || isStaticExternal
   },
   plugins: [
