@@ -1,6 +1,5 @@
 import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
-import flow from 'rollup-plugin-flow'
 import commonjs from 'rollup-plugin-commonjs'
 import { uglify } from 'rollup-plugin-uglify'
 import replace from 'rollup-plugin-replace'
@@ -57,7 +56,6 @@ export default {
   },
   plugins: [
     resolve({ jsnext: true, main: true }),
-    flow(),
     commonjs({ include: 'node_modules/**' }),
     babel({
       exclude: 'node_modules/**',
