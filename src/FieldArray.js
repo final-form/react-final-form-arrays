@@ -243,6 +243,6 @@ polyfill(FieldArray)
 
 const decorated: React.ComponentType<
   FieldArrayProps & ReactContext
-> = withReactFinalForm<FieldArrayProps>(FieldArray)
+> = withReactFinalForm(FieldArray)
 
 export default decorated
