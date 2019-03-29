@@ -1,6 +1,5 @@
 import resolve from 'rollup-plugin-node-resolve'
 import babel from 'rollup-plugin-babel'
-import flow from 'rollup-plugin-flow'
 import commonjs from 'rollup-plugin-commonjs'
 import { uglify } from 'rollup-plugin-uglify'
 import replace from 'rollup-plugin-replace'
@@ -32,6 +31,13 @@ if (es) {
   throw new Error('no format specified. --environment FORMAT:xxx')
 }
 
+const globals = {
+  react: 'React',
+  'final-form': 'FinalForm',
+  'react-final-form': 'ReactFinalForm',
+  'react-lifecycles-compat': 'ReactLifecyclesCompat'
+}
+
 // eslint-disable-next-line no-nested-ternary
 export default {
   input: 'src/index.js',
@@ -39,26 +45,17 @@ export default {
     {
       name: 'react-final-form-arrays',
       exports: 'named',
-      globals: {
-        react: 'React',
-        'prop-types': 'PropTypes',
-        'final-form': 'FinalForm',
-        'react-final-form': 'ReactFinalForm',
-        'react-lifecycles-compat': 'ReactLifecyclesCompat'
-      }
+      globals
     },
     output
   ),
-  external: [
-    'react',
-    'prop-types',
-    'final-form',
-    'react-final-form',
-    'react-lifecycles-compat'
-  ],
+  external: id => {
+    const isBabelRuntime = id.startsWith('@babel/runtime')
+    const isStaticExternal = globals[id]
+    return isBabelRuntime || isStaticExternal
+  },
   plugins: [
     resolve({ jsnext: true, main: true }),
-    flow(),
     commonjs({ include: 'node_modules/**' }),
     babel({
       exclude: 'node_modules/**',
@@ -76,6 +73,7 @@ export default {
       ],
       plugins: [
         '@babel/plugin-transform-flow-strip-types',
+        '@babel/plugin-transform-runtime',
         '@babel/plugin-syntax-dynamic-import',
         '@babel/plugin-syntax-import-meta',
         '@babel/plugin-proposal-class-properties',
@@ -90,7 +88,8 @@ export default {
         '@babel/plugin-proposal-export-namespace-from',
         '@babel/plugin-proposal-numeric-separator',
         '@babel/plugin-proposal-throw-expressions'
-      ]
+      ],
+      runtimeHelpers: true
     }),
     umd
       ? replace({
