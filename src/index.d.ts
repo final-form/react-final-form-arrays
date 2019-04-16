@@ -10,6 +10,7 @@ export interface FieldArrayRenderProps {
     insert: (index: number, value: any) => void
     map: (iterator: (name: string, index: number) => any) => any[]
     move: (from: number, to: number) => void
+    update: (index: number, value: any) => void
     name: string
     pop: () => any
     push: (value: any) => void
