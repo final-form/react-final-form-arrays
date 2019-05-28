@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { FieldSubscription, FieldState } from 'final-form'
+import { UseFieldConfig } from 'react-final-form'
 export const version: string
 
-export const FieldArray: React.ComponentType<FieldArrayProps>
-
-export interface FieldArrayRenderProps {
+export interface FieldArrayRenderProps<T extends HTMLElement> {
   fields: {
     forEach: (iterator: (name: string, index: number) => void) => void
     insert: (index: number, value: any) => void
@@ -42,10 +41,19 @@ export interface RenderableProps<T> {
   render?: (props: T) => React.ReactNode
 }
 
-export interface FieldArrayProps
-  extends RenderableProps<FieldArrayRenderProps> {
-  name: string
-  isEqual?: (a: any, b: any) => boolean
-  subscription?: FieldSubscription
-  validate?: (value: any, allValues: object) => any
+export interface UseFieldArrayConfig extends UseFieldConfig {
+  isEqual?: (a: any[], b: any[]) => boolean
 }
+
+export interface FieldArrayProps<T extends HTMLElement>
+  extends UseFieldArrayConfig,
+    RenderableProps<FieldArrayRenderProps<T>> {
+  name: string
+  [otherProp: string]: any
+}
+
+export const FieldArray: React.FC<FieldArrayProps<any>>
+export function useFieldArray<T extends HTMLElement>(
+  name: string,
+  config: UseFieldArrayConfig
+): FieldArrayRenderProps<T>
