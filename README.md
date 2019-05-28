@@ -198,7 +198,7 @@ passed into the `<FieldArray/>` component.
 
 #### `isEqual?: (allPreviousValues: Array<any>, allNewValues: Array<any>) => boolean`
 
-A function that can be used to compare two arrays of values (before and after every change) and calculate pristine/dirty checks.
+A function that can be used to compare two arrays of values (before and after every change) and calculate pristine/dirty checks. Defaults to a function that will `===` check each element of the array.
 
 #### `subscription?: FieldSubscription`
 
