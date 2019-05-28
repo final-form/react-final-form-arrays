@@ -10,19 +10,15 @@ export default function renderComponent<T>(
 ): React.Node {
   const { render, children, component, ...rest } = props
   if (component) {
-    return React.createElement(component, { ...rest, children }) // inject children back in
+    return React.createElement(component, { ...rest, children, render }) // inject children back in
   }
   if (render) {
-    return render({ ...rest, children }) // inject children back in
+    return render(children === undefined ? rest : { ...rest, children }) // inject children back in
   }
-  // istanbul ignore next
   if (typeof children !== 'function') {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(
-        `Warning: Must specify either a render prop, a render function as children, or a component prop to ${name}`
-      )
-      return null // warning will alert developer to their mistake
-    }
+    throw new Error(
+      `Must specify either a render prop, a render function as children, or a component prop to ${name}`
+    )
   }
   return children(rest)
 }
