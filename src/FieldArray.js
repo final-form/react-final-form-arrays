@@ -4,7 +4,7 @@ import { version as rffVersion } from 'react-final-form'
 import type { FieldArrayProps } from './types'
 import renderComponent from './renderComponent'
 import useFieldArray from './useFieldArray'
-export const version = '2.0.1'
+export const version = '3.0.0'
 
 const versions = {
   'final-form': ffVersion,
