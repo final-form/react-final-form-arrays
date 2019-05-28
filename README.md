@@ -85,6 +85,7 @@ const MyForm = () => (
 - [Rendering](#rendering)
 - [API](#api)
   - [`FieldArray : React.ComponentType<FieldArrayProps>`](#fieldarray--reactcomponenttypefieldarrayprops)
+  - [`useFieldArray`](#usefieldarray)
   - [`version: string`](#version-string)
 - [Types](#types)
   - [`FieldArrayProps`](#fieldarrayprops)
