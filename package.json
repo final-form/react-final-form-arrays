@@ -81,7 +81,7 @@
     "typescript": "^3.4.5"
   },
   "peerDependencies": {
-    "final-form": ">=4.0.0",
+    "final-form": "^4.13.0",
     "final-form-arrays": ">=1.0.4",
     "react-final-form": "^6.0.0",
     "prop-types": "^15.6.0",
