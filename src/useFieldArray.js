@@ -18,7 +18,7 @@ const useFieldArray = (
     subscription = all,
     isEqual = defaultIsEqual,
     validate: validateProp
-  }: UseFieldArrayConfig
+  }: UseFieldArrayConfig = {}
 ): FieldArrayRenderProps => {
   const form = useForm('useFieldArray')
 
@@ -86,7 +86,7 @@ const useFieldArray = (
     fields: {
       name,
       forEach,
-      length,
+      length: length || 0,
       map,
       ...mutators,
       ...fieldState,
