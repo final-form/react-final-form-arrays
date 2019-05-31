@@ -7,6 +7,7 @@ import { Form, Field } from 'react-final-form'
 import FieldArray from './FieldArray'
 
 const onSubmitMock = values => {}
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('FieldArray', () => {
   afterEach(cleanup)
@@ -625,5 +626,55 @@ describe('FieldArray', () => {
     expect(getByTestId('formDirty')).toHaveTextContent('Pristine')
     expect(getByTestId('arrayDirty')).toHaveTextContent('Pristine')
     expect(getByTestId('names[0].dirty')).toHaveTextContent('Pristine')
+  })
+
+  it('should allow resetting the form in onSubmit', async () => {
+    // https://github.com/final-form/final-form/issues/26#issuecomment-497272119
+    const onSubmit = jest.fn((values, form) => {
+      expect(values).toEqual({ names: ['erikras'] })
+      return Promise.resolve().then(() => {
+        form.reset()
+      })
+    })
+    const { getByTestId, getByText } = render(
+      <Form
+        onSubmit={onSubmit}
+        mutators={arrayMutators}
+        subscription={{ values: true }}
+      >
+        {({ handleSubmit, values }) => (
+          <form onSubmit={handleSubmit} data-testid="form">
+            <pre data-testid="values">{JSON.stringify(values)}</pre>
+            <FieldArray
+              name="names"
+              render={({ fields }) => (
+                <div>
+                  {fields.map(field => (
+                    <Field
+                      name={field}
+                      key={field}
+                      component="input"
+                      data-testid={field}
+                    />
+                  ))}
+                  <button type="button" onClick={() => fields.push('erikras')}>
+                    Add
+                  </button>
+                </div>
+              )}
+            />
+          </form>
+        )}
+      </Form>
+    )
+    expect(getByTestId('values')).toHaveTextContent('')
+    expect(onSubmit).not.toHaveBeenCalled()
+    fireEvent.click(getByText('Add'))
+    expect(getByTestId('values')).toHaveTextContent('{"names":["erikras"]}')
+    fireEvent.submit(getByTestId('form'))
+    await sleep(3)
+    expect(onSubmit).toHaveBeenCalled()
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    expect(getByTestId('values')).toHaveTextContent('')
   })
 })

@@ -54,7 +54,7 @@
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",
-    "final-form": "^4.13.0",
+    "final-form": "^4.13.1",
     "final-form-arrays": "^1.1.2",
     "flow-bin": "^0.98.1",
     "glow": "^1.2.2",
