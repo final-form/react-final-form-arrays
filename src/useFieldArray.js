@@ -38,7 +38,7 @@ const useFieldArray = (
 
   const validate: FieldValidator = useConstant(
     () => (value, allValues, meta) => {
-      if (!validateProp) return undefined
+      if (!validateProp) return meta && meta.error
       const error = validateProp(value, allValues, meta)
       if (!error || Array.isArray(error)) {
         return error
