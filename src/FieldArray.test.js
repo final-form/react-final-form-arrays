@@ -4,13 +4,17 @@ import 'jest-dom/extend-expect'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary, Toggle } from './testUtils'
 import { Form, Field } from 'react-final-form'
-import FieldArray from './FieldArray'
+import { FieldArray, version } from '.'
 
 const onSubmitMock = values => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 describe('FieldArray', () => {
   afterEach(cleanup)
+
+  it('should export version', () => {
+    expect(version).toBeDefined()
+  })
 
   it('should warn if not used inside a form', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
