@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, cleanup } from 'react-testing-library'
+import { render, fireEvent, cleanup } from '@testing-library/react'
 import 'jest-dom/extend-expect'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary, Toggle } from './testUtils'
@@ -677,4 +677,59 @@ describe('FieldArray', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1)
     expect(getByTestId('values')).toHaveTextContent('')
   })
+
+  // it('should respect record-level validation', () => {
+  //   // https://github.com/final-form/react-final-form-arrays/pull/84
+  //   const { getByTestId, getByText } = render(
+  //     <Form
+  //       onSubmit={onSubmitMock}
+  //       mutators={arrayMutators}
+  //       subscription={{}}
+  //       validate={values => {
+  //         const errors = {}
+  //         console.info('values.names', values.names)
+  //         debugger
+  //         if (values.names && values.names.length > 1) {
+  //           errors.names = 'Too many'
+  //         }
+  //         return errors
+  //       }}
+  //     >
+  //       {({ handleSubmit }) => (
+  //         <form onSubmit={handleSubmit} data-testid="form">
+  //           <FieldArray
+  //             name="names"
+  //             render={({ fields, meta }) => (
+  //               <div>
+  //                 {fields.map(field => (
+  //                   <Field
+  //                     name={field}
+  //                     key={field}
+  //                     component="input"
+  //                     data-testid={field}
+  //                   />
+  //                 ))}
+  //                 <span data-testid="error">{meta.error}</span>
+  //                 <button type="button" onClick={() => fields.push('erikras')}>
+  //                   Add Erik
+  //                 </button>
+  //                 <button
+  //                   type="button"
+  //                   onClick={() => fields.push('jaredpalmer')}
+  //                 >
+  //                   Add Jared
+  //                 </button>
+  //               </div>
+  //             )}
+  //           />
+  //         </form>
+  //       )}
+  //     </Form>
+  //   )
+  //   expect(getByTestId('error')).toHaveTextContent('')
+  //   fireEvent.click(getByText('Add Erik'))
+  //   expect(getByTestId('error')).toHaveTextContent('')
+  //   fireEvent.click(getByText('Add Jared'))
+  //   expect(getByTestId('error')).toHaveTextContent('Too many')
+  // })
 })
