@@ -34,7 +34,8 @@ export type FieldArrayRenderProps = {
     remove: (index: number) => any,
     shift: () => any,
     swap: (indexA: number, indexB: number) => void,
-    unshift: (value: any) => void
+    unshift: (value: any) => void,
+    value: any[]
   },
   meta: Meta
 }

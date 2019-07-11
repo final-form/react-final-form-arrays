@@ -682,6 +682,28 @@ describe('FieldArray', () => {
     expect(getByTestId('values')).toHaveTextContent('')
   })
 
+  it('should provide value', () => {
+    const renderArray = jest.fn(() => <div />)
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators}
+        subscription={{}}
+        initialValues={{ foo: ['a', 'b', 'c'] }}
+      >
+        {() => (
+          <form>
+            <FieldArray name="foo">{renderArray}</FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+    expect(renderArray).toHaveBeenCalled()
+    expect(renderArray).toHaveBeenCalledTimes(1)
+
+    expect(renderArray.mock.calls[0][0].fields.value).toEqual(['a', 'b', 'c'])
+  })
+
   // it('should respect record-level validation', () => {
   //   // https://github.com/final-form/react-final-form-arrays/pull/84
   //   const { getByTestId, getByText } = render(

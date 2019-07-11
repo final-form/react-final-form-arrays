@@ -279,6 +279,10 @@ Updates a value of the specified index of the array field.
 
 A function to add a value to the beginning of the array.
 
+#### `fields.value: any[]`
+
+The value of the array. Should be treated as readonly.
+
 #### `meta.active?: boolean`
 
 [See the 🏁 Final Form docs on `active`](https://github.com/final-form/final-form#active-boolean).
