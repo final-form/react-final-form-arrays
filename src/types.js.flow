@@ -1,6 +1,26 @@
 // @flow
 import * as React from 'react'
-import type { FieldSubscription, FieldState, FormApi } from 'final-form'
+import type { FieldSubscription, FieldState } from 'final-form'
+
+type Meta = $Shape<{
+  active?: boolean,
+  data?: Object,
+  dirty?: boolean,
+  dirtySinceLastSubmit?: boolean,
+  error?: any,
+  initial?: any,
+  invalid?: boolean,
+  length?: number,
+  modified?: boolean,
+  pristine?: boolean,
+  submitError?: any,
+  submitFailed?: boolean,
+  submitSucceeded?: boolean,
+  submitting?: boolean,
+  touched?: boolean,
+  valid?: boolean,
+  visited?: boolean
+}>
 
 export type FieldArrayRenderProps = {
   fields: {
@@ -15,23 +35,8 @@ export type FieldArrayRenderProps = {
     shift: () => any,
     swap: (indexA: number, indexB: number) => void,
     unshift: (value: any) => void
-  } & FieldState,
-  meta: $Shape<{
-    // TODO: Make a diff of `FieldState` without all the functions
-    active: boolean,
-    dirty: boolean,
-    dirtySinceLastSubmit: boolean,
-    error: boolean,
-    initial: boolean,
-    invalid: boolean,
-    pristine: boolean,
-    submitError: boolean,
-    submitFailed: boolean,
-    submitSucceeded: boolean,
-    touched: boolean,
-    valid: boolean,
-    visited: boolean
-  }>
+  },
+  meta: Meta
 }
 
 export type RenderableProps<T> = $Shape<{
@@ -40,13 +45,11 @@ export type RenderableProps<T> = $Shape<{
   render: (props: T) => React.Node
 }>
 
-export type FieldArrayProps = {
-  name: string,
+export type UseFieldArrayConfig = {
   subscription?: FieldSubscription,
-  isEqual?: (any, any) => boolean,
-  validate?: (value: ?(any[]), allValues: Object) => ?any
-} & RenderableProps<FieldArrayRenderProps>
+  isEqual?: (any[], any[]) => boolean,
+  validate?: (value: ?(any[]), allValues: Object, meta: ?FieldState) => ?any
+}
 
-export type FieldArrayPropsWithForm = {
-  reactFinalForm: FormApi
-} & FieldArrayProps
+export type FieldArrayProps = { name: string } & UseFieldArrayConfig &
+  RenderableProps<FieldArrayRenderProps>

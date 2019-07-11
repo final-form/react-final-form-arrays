@@ -1,23 +1,23 @@
 import * as React from 'react'
 import { FieldSubscription, FieldState } from 'final-form'
+import { UseFieldConfig } from 'react-final-form'
 export const version: string
 
-export const FieldArray: React.ComponentType<FieldArrayProps>
-
-export interface FieldArrayRenderProps {
+export interface FieldArrayRenderProps<FieldValue, T extends HTMLElement> {
   fields: {
     forEach: (iterator: (name: string, index: number) => void) => void
-    insert: (index: number, value: any) => void
-    map: (iterator: (name: string, index: number) => any) => any[]
+    insert: (index: number, value: FieldValue) => void
+    map: <R>(iterator: (name: string, index: number) => R) => R[]
     move: (from: number, to: number) => void
+    update: (index: number, value: FieldValue) => void
     name: string
-    pop: () => any
-    push: (value: any) => void
-    remove: (index: number) => any
-    shift: () => any
+    pop: () => FieldValue
+    push: (value: FieldValue) => void
+    remove: (index: number) => FieldValue
+    shift: () => FieldValue
     swap: (indexA: number, indexB: number) => void
-    unshift: (value: any) => void
-  } & FieldState
+    unshift: (value: FieldValue) => void
+  } & FieldState<FieldValue[]>
   meta: Partial<{
     // TODO: Make a diff of `FieldState` without all the functions
     active: boolean
@@ -42,10 +42,29 @@ export interface RenderableProps<T> {
   render?: (props: T) => React.ReactNode
 }
 
-export interface FieldArrayProps
-  extends RenderableProps<FieldArrayRenderProps> {
-  name: string
-  isEqual?: (a: any, b: any) => boolean
-  subscription?: FieldSubscription
-  validate?: (value: any, allValues: object) => any
+export interface UseFieldArrayConfig<FieldValue>
+  extends UseFieldConfig<FieldValue> {
+  isEqual?: (a: any[], b: any[]) => boolean
 }
+
+export interface FieldArrayProps<FieldValue, T extends HTMLElement>
+  extends UseFieldArrayConfig<FieldValue>,
+    RenderableProps<FieldArrayRenderProps<FieldValue, T>> {
+  name: string
+  [otherProp: string]: any
+}
+
+export const FieldArray: <
+  FieldValue = any,
+  T extends HTMLElement = HTMLElement
+>(
+  props: FieldArrayProps<FieldValue, T>
+) => React.ReactElement
+
+export function useFieldArray<
+  FieldValue = any,
+  T extends HTMLElement = HTMLElement
+>(
+  name: string,
+  config: UseFieldArrayConfig<FieldValue>
+): FieldArrayRenderProps<FieldValue, T>

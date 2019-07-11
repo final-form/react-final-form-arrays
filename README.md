@@ -85,6 +85,7 @@ const MyForm = () => (
 - [Rendering](#rendering)
 - [API](#api)
   - [`FieldArray : React.ComponentType<FieldArrayProps>`](#fieldarray--reactcomponenttypefieldarrayprops)
+  - [`useFieldArray`](#usefieldarray)
   - [`version: string`](#version-string)
 - [Types](#types)
   - [`FieldArrayProps`](#fieldarrayprops)
@@ -154,6 +155,12 @@ The following can be imported from `react-final-form-arrays`.
 A component that takes [`FieldArrayProps`](#fieldarrayprops) and renders an
 array of fields
 
+### `useFieldArray`
+
+The `useFieldArray` hook takes two parameters, the first is the name of the field, and the second is an optional object that looks just like [`FieldArrayProps`](#fieldarrayprops), except without the name. It returns an object just like [`FieldArrayRenderProps`](#fieldarrayrenderprops).
+
+`useFieldArray` is used interally inside `FieldArray`.
+
 ### `version: string`
 
 The current used version of 🏁 React Final Form Arrays.
@@ -191,7 +198,7 @@ passed into the `<FieldArray/>` component.
 
 #### `isEqual?: (allPreviousValues: Array<any>, allNewValues: Array<any>) => boolean`
 
-A function that can be used to compare two arrays of values (before and after every change) and calculate pristine/dirty checks.
+A function that can be used to compare two arrays of values (before and after every change) and calculate pristine/dirty checks. Defaults to a function that will `===` check each element of the array.
 
 #### `subscription?: FieldSubscription`
 

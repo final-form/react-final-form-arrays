@@ -16,9 +16,11 @@ const basic = () => (
   >
     {({
       handleSubmit,
-      mutators: { push, pop }, // injected from final-form-arrays above
+      form: {
+        mutators: { push, pop }, // injected from final-form-arrays above
+        reset
+      },
       pristine,
-      reset,
       submitting,
       values
     }) => {
