@@ -1,12 +1,11 @@
 import React, { Fragment } from 'react'
-import TestUtils from 'react-dom/test-utils'
-import { render, fireEvent, cleanup } from 'react-testing-library'
+import { render, fireEvent, cleanup } from '@testing-library/react'
 import { Form, Field } from 'react-final-form'
 import arrayMutators from 'final-form-arrays'
 import fc from 'fast-check'
 import FieldArray from './FieldArray'
 
-const nope = () => {}
+const noop = () => {}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const waitForFormToRerender = () => sleep(0)
 const INITIAL_NUMBER_OF_FIELDS = 2
@@ -112,7 +111,7 @@ const setup = async ({ initialValues }) => {
 
   const DOM = render(
     <Form
-      onSubmit={nope}
+      onSubmit={noop}
       initialValues={initialValues}
       mutators={arrayMutators}
     >
@@ -261,8 +260,7 @@ class Move {
     Model.move(this.from, this.to)
 
     // real
-    const buttonEl = DOM.getByText('Move fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Move fruit'), {
       from: this.from,
       to: this.to
     })
@@ -289,8 +287,7 @@ class Insert {
     Model.insert(this.index, this.value)
 
     // real
-    const buttonEl = DOM.getByText('Insert fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Insert fruit'), {
       index: this.index,
       value: this.value
     })
@@ -330,8 +327,7 @@ class Push {
     Model.push(this.value)
 
     // real
-    const buttonEl = DOM.getByText('Push fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Push fruit'), {
       value: this.value
     })
     await waitForFormToRerender()
@@ -356,8 +352,7 @@ class Remove {
     Model.remove(this.index)
 
     // real
-    const buttonEl = DOM.getByText('Remove fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Remove fruit'), {
       index: this.index
     })
     await waitForFormToRerender()
@@ -406,8 +401,7 @@ class Swap {
     Model.swap(this.a, this.b)
 
     // real
-    const buttonEl = DOM.getByText('Swap fruits')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Swap fruits'), {
       a: this.a,
       b: this.b
     })
@@ -436,8 +430,7 @@ class Update {
     Model.update(this.index, this.newValue)
 
     // real
-    const buttonEl = DOM.getByText('Update fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Update fruit'), {
       index: this.index,
       value: this.newValue
     })
@@ -460,8 +453,7 @@ class Unshift {
     Model.unshift(this.value)
 
     // real
-    const buttonEl = DOM.getByText('Unshift fruit')
-    TestUtils.Simulate.click(buttonEl, {
+    fireEvent.click(DOM.getByText('Unshift fruit'), {
       value: this.value
     })
     await waitForFormToRerender()
