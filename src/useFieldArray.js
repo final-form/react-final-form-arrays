@@ -30,6 +30,7 @@ const useFieldArray = (
     )
   }
   const mutators = useConstant<Mutators>(() =>
+    // curry the field name onto all mutator calls
     Object.keys(formMutators).reduce((result, key) => {
       result[key] = (...args) => formMutators[key](name, ...args)
       return result
