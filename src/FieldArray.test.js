@@ -637,7 +637,7 @@ describe('FieldArray', () => {
     const onSubmit = jest.fn((values, form) => {
       expect(values).toEqual({ names: ['erikras'] })
       return Promise.resolve().then(() => {
-        form.reset()
+        setTimeout(form.reset)
       })
     })
     const { getByTestId, getByText } = render(
