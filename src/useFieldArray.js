@@ -57,7 +57,7 @@ const useFieldArray = (
     input,
     ...fieldState
   } = useField(name, {
-    subscription: { ...subscription, value: true, length: true },
+    subscription: { ...subscription, length: true },
     isEqual,
     validate,
     format: v => v
