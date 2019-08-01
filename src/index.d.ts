@@ -35,6 +35,7 @@ export interface FieldArrayRenderProps<FieldValue, T extends HTMLElement> {
     valid: boolean
     visited: boolean
   }>
+  [key: string]: any
 }
 
 export interface RenderableProps<T> {
