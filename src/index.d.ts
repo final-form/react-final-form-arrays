@@ -67,5 +67,5 @@ export function useFieldArray<
   T extends HTMLElement = HTMLElement
 >(
   name: string,
-  config: UseFieldArrayConfig<FieldValue>
+  config?: UseFieldArrayConfig<FieldValue>
 ): FieldArrayRenderProps<FieldValue, T>
