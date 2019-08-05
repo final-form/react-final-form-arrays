@@ -1,3 +1,7 @@
+💰 **Wanna get paid the big bucks writing React? [Take this quiz](https://triplebyte.com/a/V6j0KPS/rffarrays) and get offers from top tech companies!** 💰
+
+---
+
 # 🏁 React Final Form Arrays
 
 [![NPM Version](https://img.shields.io/npm/v/react-final-form-arrays.svg?style=flat)](https://www.npmjs.com/package/react-final-form-arrays)

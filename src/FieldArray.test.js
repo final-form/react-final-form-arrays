@@ -1,8 +1,8 @@
 import React from 'react'
 import { render, fireEvent, cleanup } from '@testing-library/react'
-import 'jest-dom/extend-expect'
+import '@testing-library/jest-dom/extend-expect'
 import arrayMutators from 'final-form-arrays'
-import { ErrorBoundary, Toggle } from './testUtils'
+import { ErrorBoundary, Toggle, wrapWith } from './testUtils'
 import { Form, Field } from 'react-final-form'
 import { FieldArray, version } from '.'
 
@@ -129,7 +129,7 @@ describe('FieldArray', () => {
     const renderArray = jest.fn(() => <div />)
     class Container extends React.Component {
       state = { name: 'dogs' }
-      
+
       render() {
         return (
           <form>
@@ -149,10 +149,10 @@ describe('FieldArray', () => {
     expect(renderArray).toHaveBeenCalled()
     expect(renderArray).toHaveBeenCalledTimes(1)
     expect(renderArray.mock.calls[0][0].value).toBeUndefined()
-    
+
     const button = TestUtils.findRenderedDOMComponentWithTag(dom, 'button')
     TestUtils.Simulate.click(button)
-    
+
     expect(renderArray).toHaveBeenCalledTimes(2)
     expect(renderArray.mock.calls[1][0].value).toBeUndefined()
   })
@@ -445,6 +445,60 @@ describe('FieldArray', () => {
     expect(queryByTestId('names[1]')).not.toBe(null)
   })
 
+  it('should not re-render Field when subscription is empty object', () => {
+    const nameFieldRender = jest.fn()
+    const surnameFieldRender = jest.fn()
+
+    const { getByTestId } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators}
+        subscription={{}}
+        initialValues={{
+          names: [{ id: 1, name: 'John', surname: 'Doe' }]
+        }}
+      >
+        {({ handleSubmit }) => (
+          <form onSubmit={handleSubmit} data-testid="form">
+            <FieldArray name="names" subscription={{}}>
+              {({ fields }) =>
+                fields.map(field => {
+                  return (
+                    <div key={`${field}.id`}>
+                      <Field name={`${field}.name`}>
+                        {wrapWith(nameFieldRender, ({ input }) => (
+                          <input data-testid={`${field}.name`} {...input} />
+                        ))}
+                      </Field>
+                      <Field name={`${field}.surname`}>
+                        {wrapWith(surnameFieldRender, ({ input }) => (
+                          <input data-testid={`${field}.surname`} {...input} />
+                        ))}
+                      </Field>
+                    </div>
+                  )
+                })
+              }
+            </FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+
+    fireEvent.change(getByTestId('names[0].name'), {
+      target: { value: 'Sue' }
+    })
+    expect(getByTestId('names[0].name').value).toBe('Sue')
+
+    fireEvent.change(getByTestId('names[0].name'), {
+      target: { value: 'Paul' }
+    })
+    expect(getByTestId('names[0].name').value).toBe('Paul')
+
+    expect(nameFieldRender).toHaveBeenCalledTimes(3)
+    expect(surnameFieldRender).toHaveBeenCalledTimes(1)
+  })
+
   it('should allow Fields to be rendered for complex objects', () => {
     const onSubmit = jest.fn()
     const { getByTestId, getByText, queryByTestId } = render(
@@ -637,7 +691,7 @@ describe('FieldArray', () => {
     const onSubmit = jest.fn((values, form) => {
       expect(values).toEqual({ names: ['erikras'] })
       return Promise.resolve().then(() => {
-        form.reset()
+        setTimeout(form.reset)
       })
     })
     const { getByTestId, getByText } = render(

@@ -32,6 +32,7 @@ const useFieldArray = (
     )
   }
   const mutators = useConstant<Mutators>(() =>
+    // curry the field name onto all mutator calls
     Object.keys(formMutators).reduce((result, key) => {
       result[key] = (...args) => formMutators[key](name, ...args)
       return result
@@ -58,7 +59,7 @@ const useFieldArray = (
     input,
     ...fieldState
   } = useField(name, {
-    subscription: { ...subscription, value: true, length: true },
+    subscription: { ...subscription, length: true },
     defaultValue,
     initialValue,
     isEqual,
