@@ -16,6 +16,8 @@ const useFieldArray = (
   name: string,
   {
     subscription = all,
+    defaultValue,
+    initialValue,
     isEqual = defaultIsEqual,
     validate: validateProp
   }: UseFieldArrayConfig = {}
@@ -58,6 +60,8 @@ const useFieldArray = (
     ...fieldState
   } = useField(name, {
     subscription: { ...subscription, length: true },
+    defaultValue,
+    initialValue,
     isEqual,
     validate,
     format: v => v

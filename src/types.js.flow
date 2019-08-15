@@ -48,6 +48,8 @@ export type RenderableProps<T> = $Shape<{
 
 export type UseFieldArrayConfig = {
   subscription?: FieldSubscription,
+  defaultValue?: any,
+  initialValue?: any,
   isEqual?: (any[], any[]) => boolean,
   validate?: (value: ?(any[]), allValues: Object, meta: ?FieldState) => ?any
 }

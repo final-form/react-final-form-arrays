@@ -97,6 +97,8 @@ const MyForm = () => (
     - [`component?: React.ComponentType<FieldArrayRenderProps>`](#component-reactcomponenttypefieldarrayrenderprops)
     - [`name: string`](#name-string)
     - [`render?: (props: FieldArrayRenderProps) => React.Node`](#render-props-fieldarrayrenderprops--reactnode)
+    - [`defaultValue?: any`](#defaultvalue-any)
+    - [`initialValue?: any`](#initialvalue-any)
     - [`isEqual?: (allPreviousValues: Array<any>, allNewValues: Array<any>) => boolean`](#isequal-allpreviousvalues-arrayany-allnewvalues-arrayany--boolean)
     - [`subscription?: FieldSubscription`](#subscription-fieldsubscription)
     - [`validate?: (value: ?any[], allValues: Object) => ?any`](#validate-value-any-allvalues-object--any)
@@ -199,6 +201,16 @@ The name of your field array.
 A render function that is given
 [`FieldArrayRenderProps`](#fieldarrayrenderprops), as well as any non-API props
 passed into the `<FieldArray/>` component.
+
+#### `defaultValue?: any`
+
+⚠️ You probably want `initialValue`! ⚠️
+
+_**Before using this prop, read and understand the 🏁 Final Form documentation on [`initialValue`](https://github.com/final-form/final-form#initialvalue-any) and [`defaultValue`](https://github.com/final-form/final-form#defaultvalue-any)!**_
+
+#### `initialValue?: any`
+
+[See the 🏁 Final Form docs on `initialValue`](https://github.com/final-form/final-form#initialvalue-any)
 
 #### `isEqual?: (allPreviousValues: Array<any>, allNewValues: Array<any>) => boolean`
 
