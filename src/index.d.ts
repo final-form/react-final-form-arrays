@@ -44,7 +44,7 @@ export interface RenderableProps<T> {
 }
 
 export interface UseFieldArrayConfig<FieldValue>
-  extends UseFieldConfig<FieldValue> {
+  extends UseFieldConfig<FieldValue[]> {
   isEqual?: (a: any[], b: any[]) => boolean
 }
 
