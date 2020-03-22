@@ -86,7 +86,6 @@
     "final-form": "^4.15.0",
     "final-form-arrays": ">=1.0.4",
     "react-final-form": "^6.2.1",
-    "prop-types": "^15.6.0",
     "react": "^16.8.0"
   },
   "jest": {
