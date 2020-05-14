@@ -138,7 +138,7 @@ const MyForm = () => (
 Demostrates how to use `<FieldArray/>` to render an array of inputs, as well as
 use `push`, `pop`, and `remove` mutations.
 
-### [React Beautiful DnD Example](https://codesandbox.io/s/8k0ykyr7z9)
+### [React Beautiful DnD Example](https://codesandbox.io/s/678pj)
 
 Demostrates how to integrate the simple example with [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd)
 
