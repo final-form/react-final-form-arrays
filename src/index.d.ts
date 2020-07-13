@@ -24,11 +24,11 @@ export interface FieldArrayRenderProps<FieldValue, T extends HTMLElement> {
     active: boolean
     dirty: boolean
     dirtySinceLastSubmit: boolean
-    error: boolean
-    initial: boolean
+    error: any
+    initial: any
     invalid: boolean
     pristine: boolean
-    submitError: boolean
+    submitError: any
     submitFailed: boolean
     submitSucceeded: boolean
     touched: boolean
