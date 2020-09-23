@@ -115,6 +115,7 @@ const MyForm = () => (
     - [`fields.swap: (indexA: number, indexB: number) => void`](#fieldsswap-indexa-number-indexb-number--void)
     - [`fields.update: (index: number, value: any) => void`](#fieldsupdate-index-number-value-any--void)
     - [`fields.unshift: (value: any) => void`](#fieldsunshift-value-any--void)
+    - [`fields.value: any[]`](#fieldsvalue-any)
     - [`meta.active?: boolean`](#metaactive-boolean)
     - [`meta.data: Object`](#metadata-object)
     - [`meta.dirty?: boolean`](#metadirty-boolean)
