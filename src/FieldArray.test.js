@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent, cleanup } from '@testing-library/react'
+import { act, render, fireEvent, cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary, Toggle, wrapWith } from './testUtils'
@@ -7,7 +7,12 @@ import { Form, Field } from 'react-final-form'
 import { FieldArray, version } from '.'
 
 const onSubmitMock = values => {}
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+async function sleep(ms) {
+  await act(async () => {
+    await timeout(ms)
+  })
+}
 
 describe('FieldArray', () => {
   afterEach(cleanup)
@@ -259,7 +264,7 @@ describe('FieldArray', () => {
 
     expect(typeof renderArray.mock.calls[0][0].fields.push).toBe('function')
 
-    renderArray.mock.calls[0][0].fields.push('c')
+    act(() => renderArray.mock.calls[0][0].fields.push('c'))
     expect(validate).toHaveBeenCalledTimes(2)
 
     expect(renderArray).toHaveBeenCalledTimes(2)
@@ -328,9 +333,10 @@ describe('FieldArray', () => {
   })
 
   it('calculate dirty/pristine using provided isEqual predicate', () => {
-    const isEqual = jest.fn(
-      (aArray, bArray) =>
-        !aArray.some((a, index) => a.bar !== bArray[index].bar)
+    const isEqual = jest.fn((aArray, bArray) =>
+      !aArray
+        ? !bArray
+        : bArray && !aArray.some((a, index) => a.bar !== bArray[index].bar)
     )
     const { getByTestId } = render(
       <Form
@@ -508,8 +514,8 @@ describe('FieldArray', () => {
             <FieldArray name="clients">
               {({ fields }) => (
                 <div>
-                  {fields.map(field => (
-                    <div>
+                  {fields.map((field) => (
+                    <div key={field}>
                       <Field
                         name={`${field}.firstName`}
                         key={`${field}.firstName`}
@@ -725,7 +731,7 @@ describe('FieldArray', () => {
         )}
       </Form>
     )
-    expect(getByTestId('values')).toHaveTextContent('')
+    expect(getByTestId('values')).toHaveTextContent('{}')
     expect(onSubmit).not.toHaveBeenCalled()
     fireEvent.click(getByText('Add'))
     expect(getByTestId('values')).toHaveTextContent('{"names":["erikras"]}')
@@ -733,7 +739,7 @@ describe('FieldArray', () => {
     await sleep(3)
     expect(onSubmit).toHaveBeenCalled()
     expect(onSubmit).toHaveBeenCalledTimes(1)
-    expect(getByTestId('values')).toHaveTextContent('')
+    expect(getByTestId('values')).toHaveTextContent('{}')
   })
 
   it('should provide value', () => {

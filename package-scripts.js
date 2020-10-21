@@ -79,13 +79,7 @@ module.exports = {
     validate: {
       description:
         'This runs several scripts to make sure things look good before committing or on clean install',
-      default: concurrent.nps(
-        'lint',
-        'flow',
-        'typescript',
-        'build.andTest',
-        'test'
-      )
+      default: concurrent.nps('lint', 'typescript', 'build.andTest', 'test')
     }
   },
   options: {

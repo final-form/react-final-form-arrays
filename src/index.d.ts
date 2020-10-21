@@ -1,5 +1,4 @@
-import * as React from 'react'
-import { FieldSubscription, FieldState } from 'final-form'
+import { FieldState } from 'final-form'
 import { UseFieldConfig } from 'react-final-form'
 export const version: string
 

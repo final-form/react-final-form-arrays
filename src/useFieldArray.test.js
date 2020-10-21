@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, cleanup } from '@testing-library/react'
+import { act, render, cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom/extend-expect'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
@@ -53,7 +53,7 @@ describe('FieldArray', () => {
     expect(spy).toHaveBeenCalledTimes(1)
     expect(spy.mock.calls[0][0].fields.length).toBe(0)
 
-    spy.mock.calls[0][0].fields.push('bob')
+    act(() => spy.mock.calls[0][0].fields.push('bob'))
 
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].fields.length).toBe(1)
