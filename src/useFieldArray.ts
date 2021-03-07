@@ -40,19 +40,20 @@ const useFieldArray = (
     }, {} as Record<string, Function>
     ), [name, formMutators])
 
-  const validate: FieldValidator = useConstant(
-    () => (value: any, allValues: any, meta: any) => {
-      if (!validateProp) return undefined
-      const error = validateProp(value, allValues, meta)
-      if (!error || Array.isArray(error)) {
-        return error
-      } else {
-        const arrayError: any[] = []
-          // gross, but we have to set a string key on the array
-          ; (arrayError as any)[ARRAY_ERROR] = error
-        return arrayError
-      }
-    }
+  const validate: FieldValidator = useConstant(() =>
+    !validateProp
+      ? undefined
+      : (value: any, allValues: any, meta: any) => {
+          const error = validateProp(value, allValues, meta)
+          if (!error || Array.isArray(error)) {
+            return error
+          } else {
+            const arrayError: any[] = []
+            // gross, but we have to set a string key on the array
+            ; (arrayError as any)[ARRAY_ERROR] = error
+            return arrayError
+          }
+        }
   )
 
   const fieldState = useField(name, {
