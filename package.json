@@ -87,7 +87,7 @@
     "final-form": "^4.15.0",
     "final-form-arrays": ">=1.0.4",
     "react-final-form": "^6.2.1",
-    "react": "^16.8.0 || ^17.0.0"
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0"
   },
   "jest": {
     "watchPlugins": [
