@@ -6,7 +6,7 @@ import { ErrorBoundary, Toggle, wrapWith } from './testUtils'
 import { Form, Field } from 'react-final-form'
 import { FieldArray, version } from '.'
 
-const onSubmitMock = values => {}
+const onSubmitMock = values => { }
 const timeout = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 async function sleep(ms) {
   await act(async () => {
@@ -22,7 +22,7 @@ describe('FieldArray', () => {
   })
 
   it('should warn if not used inside a form', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => { })
     const errorSpy = jest.fn()
     render(
       <ErrorBoundary spy={errorSpy}>
@@ -38,7 +38,7 @@ describe('FieldArray', () => {
   })
 
   it('should warn if no render strategy is provided', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => { })
     const errorSpy = jest.fn()
     render(
       <ErrorBoundary spy={errorSpy}>
@@ -58,7 +58,7 @@ describe('FieldArray', () => {
   })
 
   it('should warn if no array mutators provided', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'error').mockImplementation(() => { })
     const errorSpy = jest.fn()
     render(
       <ErrorBoundary spy={errorSpy}>
@@ -449,6 +449,58 @@ describe('FieldArray', () => {
 
     expect(queryByTestId('names[0]')).not.toBe(null)
     expect(queryByTestId('names[1]')).not.toBe(null)
+  })
+
+  it('should push a new value to right place after changing name', () => {
+    const { getByText, queryByTestId } = render(
+      <Toggle>
+        {isCats => (
+          <Form onSubmit={onSubmitMock} mutators={arrayMutators} subscription={{}}>
+            {() => (
+              <form>
+                <FieldArray name={isCats ? 'cats' : 'dogs'}>
+                  {({ fields }) => (
+                    <div>
+                      {fields.map(field => (
+                        <Field
+                          name={field}
+                          key={field}
+                          component="input"
+                          data-testid={field}
+                        />
+                      ))}
+                      <button type="button" onClick={() => fields.push({})}>
+                        Add
+                      </button>
+                    </div>
+                  )}
+                </FieldArray>
+              </form>
+            )}
+          </Form>
+        )}
+      </Toggle>
+    )
+    expect(queryByTestId('dogs[0]')).toBe(null)
+    expect(queryByTestId('dogs[1]')).toBe(null)
+
+    // push
+    fireEvent.click(getByText('Add'))
+
+    expect(queryByTestId('dogs[0]')).not.toBe(null)
+    expect(queryByTestId('dogs[1]')).toBe(null)
+
+    // change name
+    fireEvent.click(getByText('Toggle'))
+
+    expect(queryByTestId('cats[0]')).toBe(null)
+    expect(queryByTestId('cats[1]')).toBe(null)
+
+    // push
+    fireEvent.click(getByText('Add'))
+
+    expect(queryByTestId('cats[0]')).not.toBe(null)
+    expect(queryByTestId('cats[1]')).toBe(null)
   })
 
   it('should not re-render Field when subscription is empty object', () => {
