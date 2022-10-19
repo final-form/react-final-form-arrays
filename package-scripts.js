@@ -33,20 +33,22 @@ module.exports = {
       ),
       es: {
         description: 'run the build with rollup (uses rollup.config.js)',
-        script: 'rollup --config --environment FORMAT:es'
+        script: 'rollup --config --environment FORMAT:es --bundleConfigAsCjs'
       },
       cjs: {
         description: 'run rollup build with CommonJS format',
-        script: 'rollup --config --environment FORMAT:cjs'
+        script: 'rollup --config --environment FORMAT:cjs --bundleConfigAsCjs'
       },
       umd: {
         min: {
           description: 'run the rollup build with sourcemaps',
-          script: 'rollup --config --sourcemap --environment MINIFY,FORMAT:umd'
+          script:
+            'rollup --config --sourcemap --environment MINIFY,FORMAT:umd --bundleConfigAsCjs'
         },
         main: {
           description: 'builds the cjs and umd files',
-          script: 'rollup --config --sourcemap --environment FORMAT:umd'
+          script:
+            'rollup --config --sourcemap --environment FORMAT:umd --bundleConfigAsCjs'
         }
       },
       andTest: series.nps('build', 'test.size')
