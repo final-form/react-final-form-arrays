@@ -40,19 +40,20 @@ const useFieldArray = (
     }, {}
   ), [name, formMutators])
 
-  const validate: FieldValidator = useConstant(
-    () => (value, allValues, meta) => {
-      if (!validateProp) return undefined
-      const error = validateProp(value, allValues, meta)
-      if (!error || Array.isArray(error)) {
-        return error
-      } else {
-        const arrayError = []
-        // gross, but we have to set a string key on the array
-        ;((arrayError: any): Object)[ARRAY_ERROR] = error
-        return arrayError
-      }
-    }
+  const validate: FieldValidator = useConstant(() =>
+    !validateProp
+      ? undefined
+      : (value, allValues, meta) => {
+          const error = validateProp(value, allValues, meta)
+          if (!error || Array.isArray(error)) {
+            return error
+          } else {
+            const arrayError = []
+            // gross, but we have to set a string key on the array
+            ;((arrayError: any): Object)[ARRAY_ERROR] = error
+            return arrayError
+          }
+        }
   )
 
   const {
