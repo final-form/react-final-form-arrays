@@ -58,4 +58,44 @@ describe('FieldArray', () => {
     expect(spy).toHaveBeenCalledTimes(2)
     expect(spy.mock.calls[1][0].fields.length).toBe(1)
   })
+
+  it('should have undefined as value when not initialized', () => {
+    const spy = jest.fn()
+    const MyFieldArray = () => {
+      spy(useFieldArray('names'))
+      return null
+    }
+    render(
+      <Form onSubmit={onSubmitMock} mutators={arrayMutators} subscription={{}}>
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy.mock.calls[0][0].fields.value).toEqual(undefined)
+  })
+
+  it('should have empty array as value when initialized', () => {
+    const spy = jest.fn()
+    const MyFieldArray = () => {
+      spy(useFieldArray('names', { initialValue: [] }))
+      return null
+    }
+    render(
+      <Form onSubmit={onSubmitMock} mutators={arrayMutators} subscription={{}}>
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+    expect(spy).toHaveBeenCalled()
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy.mock.calls[0][0].fields.value).toEqual([])
+  })
 })

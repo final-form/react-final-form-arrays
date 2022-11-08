@@ -296,9 +296,9 @@ Updates a value of the specified index of the array field.
 
 A function to add a value to the beginning of the array.
 
-#### `fields.value: any[]`
+#### `fields.value: void | any[]`
 
-The value of the array. Should be treated as readonly.
+The value of the field. Should be treated as readonly.
 
 #### `meta.active?: boolean`
 

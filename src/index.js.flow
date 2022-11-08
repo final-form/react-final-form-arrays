@@ -9,6 +9,6 @@ import type {
 declare export var FieldArray: React.ComponentType<FieldArrayProps>
 declare export var useFieldArray: (
   name: string,
-  config: UseFieldArrayConfig
+  config?: UseFieldArrayConfig
 ) => FieldArrayRenderProps
 declare export var version: string

@@ -16,7 +16,7 @@ export interface FieldArrayRenderProps<FieldValue, T extends HTMLElement> {
     shift: () => FieldValue
     swap: (indexA: number, indexB: number) => void
     unshift: (value: FieldValue) => void
-    value: FieldValue[]
+    value: void | FieldValue[]
   } & FieldState<FieldValue[]>
   meta: Partial<{
     // TODO: Make a diff of `FieldState` without all the functions
