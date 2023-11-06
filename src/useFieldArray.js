@@ -41,9 +41,9 @@ const useFieldArray = (
   ), [name, formMutators])
 
   const validate: FieldValidator = useConstant(
-    () => (value, allValues, meta) => {
+    () => async (value, allValues, meta) => {
       if (!validateProp) return undefined
-      const error = validateProp(value, allValues, meta)
+      const error = await validateProp(value, allValues, meta)
       if (!error || Array.isArray(error)) {
         return error
       } else {
