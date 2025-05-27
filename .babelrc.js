@@ -12,10 +12,9 @@ module.exports = {
       }
     ],
     '@babel/preset-react',
-    '@babel/preset-flow'
+    '@babel/preset-typescript'
   ],
   plugins: [
-    '@babel/plugin-transform-flow-strip-types',
     '@babel/plugin-syntax-dynamic-import',
     '@babel/plugin-syntax-import-meta',
     ['@babel/plugin-proposal-class-properties', { loose }],
@@ -30,6 +29,8 @@ module.exports = {
     '@babel/plugin-proposal-export-namespace-from',
     '@babel/plugin-proposal-numeric-separator',
     '@babel/plugin-proposal-throw-expressions',
+    ['@babel/plugin-transform-private-methods', { loose }],
+    ['@babel/plugin-transform-private-property-in-object', { loose }],
     test && '@babel/plugin-transform-react-jsx-source'
   ].filter(Boolean)
 }

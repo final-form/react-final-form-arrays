@@ -2,7 +2,7 @@ import defaultIsEqual from './defaultIsEqual'
 
 describe('defaultIsEqual', () => {
   it('be true when both undefined', () => {
-    expect(defaultIsEqual(undefined, undefined)).toBe(true)
+    expect(defaultIsEqual(undefined as any, undefined as any)).toBe(true)
   })
 
   it('be true when ===', () => {
@@ -11,9 +11,9 @@ describe('defaultIsEqual', () => {
   })
 
   it('be false when either is not an array', () => {
-    expect(defaultIsEqual({}, [1, 2, 3])).toBe(false)
-    expect(defaultIsEqual([1, 2, 3], {})).toBe(false)
-    expect(defaultIsEqual({}, {})).toBe(false)
+    expect(defaultIsEqual({} as any, [1, 2, 3])).toBe(false)
+    expect(defaultIsEqual([1, 2, 3], {} as any)).toBe(false)
+    expect(defaultIsEqual({} as any, {} as any)).toBe(false)
   })
 
   it('be false when different lengths', () => {
@@ -29,4 +29,4 @@ describe('defaultIsEqual', () => {
   it('be true when contents are the same', () => {
     expect(defaultIsEqual(['a', 'b', 'c'], ['a', 'b', 'c'])).toBe(true)
   })
-})
+}) 

@@ -53,26 +53,18 @@ module.exports = {
       },
       andTest: series.nps('build', 'test.size')
     },
-    copyTypes: series(
-      npsUtils.copy('src/*.js.flow src/*.d.ts dist'),
-      npsUtils.copy(
-        'dist/index.js.flow dist --rename="react-final-form-arrays.cjs.js.flow"'
-      ),
-      npsUtils.copy(
-        'dist/index.js.flow dist --rename="react-final-form-arrays.es.js.flow"'
-      )
-    ),
+    copyTypes: npsUtils.copy('src/*.d.ts dist'),
     docs: {
       description: 'Generates table of contents in README',
       script: 'doctoc README.md'
     },
+    prettier: {
+      description: 'Runs prettier on everything',
+      script: 'prettier --write "**/*.([jt]s*)"'
+    },
     lint: {
       description: 'lint the entire project',
       script: 'eslint .'
-    },
-    flow: {
-      description: 'flow check the entire project',
-      script: 'flow check'
     },
     typescript: {
       description: 'typescript check the entire project',
