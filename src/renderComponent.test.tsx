@@ -1,9 +1,10 @@
+import * as React from 'react'
 import renderComponent from './renderComponent'
 
 describe('renderComponent', () => {
   it('should pass both render and children prop', () => {
     const children = 'some children'
-    const render = () => {}
+    const render = () => null
     const props = {
       component: () => null,
       children,
@@ -11,7 +12,7 @@ describe('renderComponent', () => {
     }
     const name = 'TestComponent'
     const result = renderComponent(props, name)
-    expect(result.props).toEqual({ children, render })
+    expect((result as any).props).toEqual({ children, render })
   })
 
   it('should include children when rendering with render', () => {

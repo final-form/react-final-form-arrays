@@ -1,17 +1,16 @@
-// @flow
 import { useMemo } from 'react';
 import { useForm, useField } from 'react-final-form'
 import { fieldSubscriptionItems, ARRAY_ERROR } from 'final-form'
-import type { Mutators } from 'final-form-arrays'
-import type { FieldValidator, FieldSubscription } from 'final-form'
-import type { FieldArrayRenderProps, UseFieldArrayConfig } from './types'
+import { Mutators } from 'final-form-arrays'
+import { FieldValidator, FieldSubscription } from 'final-form'
+import { FieldArrayRenderProps, UseFieldArrayConfig } from './types'
 import defaultIsEqual from './defaultIsEqual'
 import useConstant from './useConstant'
 
 const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
   return result
-}, {})
+}, {} as FieldSubscription)
 
 const useFieldArray = (
   name: string,
@@ -25,31 +24,31 @@ const useFieldArray = (
 ): FieldArrayRenderProps => {
   const form = useForm('useFieldArray')
 
-  const formMutators: Mutators = form.mutators
-  const hasMutators = !!(formMutators && formMutators.push && formMutators.pop)
+  const formMutators = form.mutators as unknown as Mutators
+  const hasMutators = !!(formMutators && (formMutators as any).push && (formMutators as any).pop)
   if (!hasMutators) {
     throw new Error(
       'Array mutators not found. You need to provide the mutators from final-form-arrays to your form'
     )
   }
-  const mutators = useMemo<Mutators>(() =>
+  const mutators = useMemo<Record<string, Function>>(() =>
     // curry the field name onto all mutator calls
     Object.keys(formMutators).reduce((result, key) => {
-      result[key] = (...args) => formMutators[key](name, ...args)
+      result[key] = (...args: any[]) => (formMutators as any)[key](name, ...args)
       return result
-    }, {}
-  ), [name, formMutators])
+    }, {} as Record<string, Function>
+    ), [name, formMutators])
 
   const validate: FieldValidator = useConstant(
-    () => (value, allValues, meta) => {
+    () => (value: any, allValues: any, meta: any) => {
       if (!validateProp) return undefined
       const error = validateProp(value, allValues, meta)
       if (!error || Array.isArray(error)) {
         return error
       } else {
-        const arrayError = []
-        // gross, but we have to set a string key on the array
-        ;((arrayError: any): Object)[ARRAY_ERROR] = error
+        const arrayError: any[] = []
+          // gross, but we have to set a string key on the array
+          ; (arrayError as any)[ARRAY_ERROR] = error
         return arrayError
       }
     }
@@ -77,11 +76,11 @@ const useFieldArray = (
     }
   }
 
-  const map = (iterator: (name: string, index: number) => any): any[] => {
+  const map = <T,>(iterator: (name: string, index: number) => T): T[] => {
     // required || for Flow, but results in uncovered line in Jest/Istanbul
     // istanbul ignore next
     const len = length || 0
-    const results: any[] = []
+    const results: T[] = []
     for (let i = 0; i < len; i++) {
       results.push(iterator(`${name}[${i}]`, i))
     }
@@ -94,12 +93,12 @@ const useFieldArray = (
       forEach,
       length: length || 0,
       map,
-      ...mutators,
+      ...(mutators as any),
       ...fieldState,
       value: input.value
-    },
+    } as any,
     meta
   }
 }
 
-export default useFieldArray
+export default useFieldArray 

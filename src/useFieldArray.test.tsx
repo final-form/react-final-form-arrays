@@ -1,12 +1,12 @@
-import React from 'react'
+import * as React from 'react'
 import { act, render, cleanup } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
+import '@testing-library/jest-dom'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
 import { Form } from 'react-final-form'
 import useFieldArray from './useFieldArray'
 
-const onSubmitMock = values => {}
+const onSubmitMock = (values: any) => {}
 
 describe('FieldArray', () => {
   afterEach(cleanup)
@@ -31,7 +31,7 @@ describe('FieldArray', () => {
     expect(errorSpy.mock.calls[0][0].message).toBe(
       'useFieldArray must be used inside of a <Form> component'
     )
-    console.error.mockRestore()
+    ;(console.error as any).mockRestore()
   })
 
   it('should track field array state', () => {
@@ -41,7 +41,7 @@ describe('FieldArray', () => {
       return null
     }
     render(
-      <Form onSubmit={onSubmitMock} mutators={arrayMutators} subscription={{}}>
+      <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
         {() => (
           <form>
             <MyFieldArray />
@@ -50,12 +50,13 @@ describe('FieldArray', () => {
       </Form>
     )
     expect(spy).toHaveBeenCalled()
-    expect(spy).toHaveBeenCalledTimes(1)
+    expect(spy).toHaveBeenCalledTimes(2) // React 18+ renders twice in dev
     expect(spy.mock.calls[0][0].fields.length).toBe(0)
 
     act(() => spy.mock.calls[0][0].fields.push('bob'))
 
-    expect(spy).toHaveBeenCalledTimes(2)
-    expect(spy.mock.calls[1][0].fields.length).toBe(1)
+    expect(spy).toHaveBeenCalledTimes(3) // 2 initial + 1 after push
+    expect(spy.mock.calls[2][0].fields.length).toBe(1)
+    expect(spy.mock.calls[2][0].fields.value).toEqual(['bob'])
   })
 })

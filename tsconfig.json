@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "lib": [
-      "es2015",
-      "dom"
-    ],
+    "lib": ["es2015", "dom"],
     "jsx": "react",
     "baseUrl": ".",
     "noEmit": true,
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "outDir": "./dist",
+    "target": "es5",
+    "module": "esnext"
   },
-  "include": [
-    "./src/**/*"
-  ]
+  "include": ["./src/**/*"],
+  "exclude": ["./src/**/*.test.ts", "./src/**/*.test.tsx"]
 }

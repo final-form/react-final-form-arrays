@@ -4,6 +4,7 @@ import commonjs from 'rollup-plugin-commonjs'
 import json from 'rollup-plugin-json'
 import { uglify } from 'rollup-plugin-uglify'
 import replace from 'rollup-plugin-replace'
+import typescript from '@rollup/plugin-typescript'
 
 const minify = process.env.MINIFY
 const format = process.env.FORMAT
@@ -36,12 +37,16 @@ const globals = {
   react: 'React',
   'final-form': 'FinalForm',
   'react-final-form': 'ReactFinalForm',
-  'react-lifecycles-compat': 'ReactLifecyclesCompat'
+  'react-lifecycles-compat': 'ReactLifecyclesCompat',
+  '@babel/runtime/helpers/extends': '_extends',
+  '@babel/runtime/helpers/objectWithoutPropertiesLoose':
+    '_objectWithoutPropertiesLoose'
 }
 
-// eslint-disable-next-line no-nested-ternary
+const loose = true
+
 export default {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: Object.assign(
     {
       name: 'react-final-form-arrays',
@@ -50,35 +55,43 @@ export default {
     },
     output
   ),
-  external: id => {
+  external: (id) => {
     const isBabelRuntime = id.startsWith('@babel/runtime')
     const isStaticExternal = globals[id]
     return isBabelRuntime || isStaticExternal
   },
   plugins: [
-    resolve({ jsnext: true, main: true }),
+    resolve({
+      mainFields: ['module', 'jsnext:main', 'main'],
+      extensions: ['.js', '.jsx', '.ts', '.tsx']
+    }),
     json(),
+    typescript({
+      tsconfig: './tsconfig.build.json',
+      declaration: true,
+      declarationMap: true
+    }),
     commonjs({ include: 'node_modules/**' }),
     babel({
       exclude: 'node_modules/**',
+      extensions: ['.js', '.jsx', '.ts', '.tsx'],
       babelrc: false,
       presets: [
         [
           '@babel/preset-env',
           {
-            loose: true,
+            loose,
             modules: false
           }
         ],
         '@babel/preset-react',
-        '@babel/preset-flow'
+        '@babel/preset-typescript'
       ],
       plugins: [
-        '@babel/plugin-transform-flow-strip-types',
         '@babel/plugin-transform-runtime',
         '@babel/plugin-syntax-dynamic-import',
         '@babel/plugin-syntax-import-meta',
-        '@babel/plugin-proposal-class-properties',
+        ['@babel/plugin-proposal-class-properties', { loose }],
         '@babel/plugin-proposal-json-strings',
         [
           '@babel/plugin-proposal-decorators',
@@ -89,7 +102,9 @@ export default {
         '@babel/plugin-proposal-function-sent',
         '@babel/plugin-proposal-export-namespace-from',
         '@babel/plugin-proposal-numeric-separator',
-        '@babel/plugin-proposal-throw-expressions'
+        '@babel/plugin-proposal-throw-expressions',
+        ['@babel/plugin-transform-private-methods', { loose }],
+        ['@babel/plugin-transform-private-property-in-object', { loose }]
       ],
       runtimeHelpers: true
     }),
