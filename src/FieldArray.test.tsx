@@ -87,7 +87,7 @@ describe('FieldArray', () => {
     const { getByTestId } = render(
       <Form
         onSubmit={onSubmitMock}
-        mutators={arrayMutators as any}
+        mutators={arrayMutators as typeof arrayMutators}
         subscription={{}}
       >
         {() => <FieldArray name="foo" component={MyComp} />}
