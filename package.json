@@ -1,6 +1,6 @@
 {
   "name": "react-final-form-arrays",
-  "version": "4.0.0-1",
+  "version": "4.0.0",
   "description": "A component for rendering and editing arrays 🏁 React Final Form",
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
