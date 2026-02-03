@@ -12,6 +12,22 @@ const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   return result
 }, {} as FieldSubscription)
 
+/**
+ * handle synced errors
+ */
+const handleError = (error: string | readonly string[] | void) => {
+  if (!error || Array.isArray(error)) {
+    return error
+  }
+  const arrayError: string[] = [];
+  // gross, but we have to set a string key on the array
+  (arrayError as unknown as Record<string, string>)[ARRAY_ERROR] =
+    error as string
+
+  return arrayError
+}
+
+
 const useFieldArray = (
   name: string,
   {
@@ -42,15 +58,19 @@ const useFieldArray = (
   const validate: FieldValidator = useConstant(
     () => (value: any, allValues: any, meta: any) => {
       if (!validateProp) return undefined
-      const error = validateProp(value, allValues, meta)
-      if (!error || Array.isArray(error)) {
-        return error
-      } else {
-        const arrayError: any[] = []
-          // gross, but we have to set a string key on the array
-          ; (arrayError as any)[ARRAY_ERROR] = error
-        return arrayError
+
+      const validation = validateProp(value, allValues, meta)
+      if (!validation) {
+        return undefined;
       }
+
+      if (validation?.then) {
+        return validation.then((error: string | readonly string[] | void) =>
+          handleError(error),
+        );
+      }
+
+      return handleError(validation);
     }
   )
 
