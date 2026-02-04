@@ -42,8 +42,7 @@ export interface RenderableProps<T> {
   render?: (props: T) => React.ReactNode
 }
 
-export interface UseFieldArrayConfig<FieldValue>
-  extends UseFieldConfig<FieldValue[]> {
+export interface UseFieldArrayConfig<FieldValue> extends UseFieldConfig {
   isEqual?: (a: any[], b: any[]) => boolean
 }
 
