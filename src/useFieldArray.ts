@@ -6,6 +6,7 @@ import { FieldValidator, FieldSubscription } from 'final-form'
 import { FieldArrayRenderProps, UseFieldArrayConfig } from './types'
 import defaultIsEqual from './defaultIsEqual'
 import useConstant from './useConstant'
+import copyPropertyDescriptors from './copyPropertyDescriptors'
 
 const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
@@ -69,13 +70,7 @@ const useFieldArray = (
   const length = meta.length
 
   // Create a new meta object that excludes length, preserving lazy getters
-  const metaWithoutLength = {} as any
-  const metaDescriptors = Object.getOwnPropertyDescriptors(meta)
-  for (const key in metaDescriptors) {
-    if (key !== 'length') {
-      Object.defineProperty(metaWithoutLength, key, metaDescriptors[key])
-    }
-  }
+  const metaWithoutLength = copyPropertyDescriptors(meta, {} as any, ['length'])
 
   const forEach = (iterator: (name: string, index: number) => void): void => {
     // required || for Flow, but results in uncovered line in Jest/Istanbul
