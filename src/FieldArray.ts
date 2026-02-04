@@ -31,13 +31,17 @@ const FieldArray = ({
     validate
   })
 
+  // FIX #167: Don't spread meta object, use Object.defineProperties to preserve lazy getters
+  const metaWithVersions = { __versions: versions } as any
+  const metaDescriptors = Object.getOwnPropertyDescriptors(meta)
+  for (const key in metaDescriptors) {
+    Object.defineProperty(metaWithVersions, key, metaDescriptors[key])
+  }
+
   return renderComponent(
     {
       fields,
-      meta: {
-        ...meta,
-        __versions: versions
-      },
+      meta: metaWithVersions,
       ...rest
     },
     `FieldArray(${name})`

@@ -911,4 +911,59 @@ describe('FieldArray', () => {
   //   fireEvent.click(getByText('Add Jared'))
   //   expect(getByTestId('error')).toHaveTextContent('Too many')
   // })
+
+  it('should not throw TypeError when accessing meta.active (fix #167)', () => {
+    // Issue #167: TypeError: Cannot read properties of undefined (reading 'active')
+    // This was caused by destructuring meta with lazy getters
+    const spy = jest.fn()
+    const { getByText } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators}
+        initialValues={{ phones: ['555-1234'] }}
+      >
+        {() => (
+          <form>
+            <FieldArray name="phones">
+              {({ fields, meta }) => (
+                <div>
+                  {fields.map((name, index) => (
+                    <div key={name}>
+                      <Field name={name} component="input" />
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    data-testid="access-meta"
+                    onClick={() => {
+                      // This should not throw TypeError
+                      spy({
+                        active: meta.active,
+                        dirty: meta.dirty,
+                        touched: meta.touched,
+                        valid: meta.valid
+                      })
+                    }}
+                  >
+                    Access Meta
+                  </button>
+                </div>
+              )}
+            </FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+
+    // Should be able to access meta properties without throwing
+    fireEvent.click(getByText('Access Meta'))
+    expect(spy).toHaveBeenCalled()
+    
+    const metaSnapshot = spy.mock.calls[0][0]
+    // meta properties should be defined (even if undefined value is valid)
+    expect('active' in metaSnapshot).toBe(true)
+    expect('dirty' in metaSnapshot).toBe(true)
+    expect('touched' in metaSnapshot).toBe(true)
+    expect('valid' in metaSnapshot).toBe(true)
+  })
 })

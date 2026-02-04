@@ -54,11 +54,7 @@ const useFieldArray = (
     }
   )
 
-  const {
-    meta: { length, ...meta },
-    input,
-    ...fieldState
-  } = useField(name, {
+  const fieldState = useField(name, {
     subscription: { ...subscription, length: true },
     defaultValue,
     initialValue,
@@ -66,6 +62,20 @@ const useFieldArray = (
     validate,
     format: v => v
   })
+
+  // FIX #167: Don't destructure/spread meta object because it has lazy getters
+  // Extract length directly from meta when needed
+  const { meta, input } = fieldState
+  const length = meta.length
+
+  // Create a new meta object that excludes length, preserving lazy getters
+  const metaWithoutLength = {} as any
+  const metaDescriptors = Object.getOwnPropertyDescriptors(meta)
+  for (const key in metaDescriptors) {
+    if (key !== 'length') {
+      Object.defineProperty(metaWithoutLength, key, metaDescriptors[key])
+    }
+  }
 
   const forEach = (iterator: (name: string, index: number) => void): void => {
     // required || for Flow, but results in uncovered line in Jest/Istanbul
@@ -87,6 +97,9 @@ const useFieldArray = (
     return results
   }
 
+  // Don't spread fieldState, extract only what we need
+  const { meta: _meta, input: _input, ...restFieldState } = fieldState
+
   return {
     fields: {
       name,
@@ -94,10 +107,10 @@ const useFieldArray = (
       length: length || 0,
       map,
       ...(mutators as any),
-      ...fieldState,
+      ...restFieldState,
       value: input.value
     } as any,
-    meta
+    meta: metaWithoutLength
   }
 }
 
