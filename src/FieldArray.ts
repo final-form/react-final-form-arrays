@@ -3,6 +3,7 @@ import { version as rffVersion } from 'react-final-form'
 import { FieldArrayProps } from './types'
 import renderComponent from './renderComponent'
 import useFieldArray from './useFieldArray'
+import copyPropertyDescriptors from './copyPropertyDescriptors'
 // @ts-ignore
 import { version } from '../package.json'
 
@@ -31,13 +32,13 @@ const FieldArray = ({
     validate
   })
 
+  // FIX #167: Don't spread meta object, use copyPropertyDescriptors to preserve lazy getters
+  const metaWithVersions = copyPropertyDescriptors(meta, { __versions: versions } as any)
+
   return renderComponent(
     {
       fields,
-      meta: {
-        ...meta,
-        __versions: versions
-      },
+      meta: metaWithVersions,
       ...rest
     },
     `FieldArray(${name})`
