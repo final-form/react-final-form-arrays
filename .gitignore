@@ -11,3 +11,4 @@ npm-debug.log
 .DS_Store
 .idea
 yarn.lock
+rollup.config-*.cjs
