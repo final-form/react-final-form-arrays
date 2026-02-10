@@ -27,8 +27,7 @@ module.exports = {
           'build.es',
           'build.cjs',
           'build.umd.main',
-          'build.umd.min',
-          'copyTypes'
+          'build.umd.min'
         )
       ),
       es: {
@@ -53,7 +52,6 @@ module.exports = {
       },
       andTest: series.nps('build', 'test.size')
     },
-    copyTypes: npsUtils.copy('src/*.d.ts dist'),
     docs: {
       description: 'Generates table of contents in README',
       script: 'doctoc README.md'

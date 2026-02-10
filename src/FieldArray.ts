@@ -4,8 +4,7 @@ import { FieldArrayProps } from './types'
 import renderComponent from './renderComponent'
 import useFieldArray from './useFieldArray'
 import copyPropertyDescriptors from './copyPropertyDescriptors'
-// @ts-ignore
-import { version } from '../package.json'
+import { version } from './version'
 
 export { version }
 
@@ -45,4 +44,4 @@ const FieldArray = ({
   )
 }
 
-export default FieldArray 
+export default FieldArray
