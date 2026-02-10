@@ -4,7 +4,7 @@ import { FieldArrayProps } from './types'
 import renderComponent from './renderComponent'
 import useFieldArray from './useFieldArray'
 import copyPropertyDescriptors from './copyPropertyDescriptors'
-import { version } from '../package.json'
+import { version } from './version'
 
 export { version }
 
