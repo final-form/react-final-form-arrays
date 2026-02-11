@@ -3,7 +3,7 @@ import { act, render, cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
-import { Form } from 'react-final-form'
+import { Form, useField } from 'react-final-form'
 import useFieldArray from './useFieldArray'
 
 const onSubmitMock = (values: any) => {}
@@ -58,5 +58,79 @@ describe('FieldArray', () => {
     expect(spy).toHaveBeenCalledTimes(3) // 2 initial + 1 after push
     expect(spy.mock.calls[2][0].fields.length).toBe(1)
     expect(spy.mock.calls[2][0].fields.value).toEqual(['bob'])
+  })
+
+  it('should not call validator when no validate prop is provided', () => {
+    // This test verifies the fix: when no validator is provided,
+    // undefined is passed instead of a no-op function that always returns undefined.
+    // This prevents final-form from tracking this field as having a validator,
+    // which would trigger unnecessary form-wide validation.
+    
+    const useFieldSpy = jest.spyOn(require('react-final-form'), 'useField')
+    
+    const MyFieldArray = () => {
+      const fieldArray = useFieldArray('names')
+      return null
+    }
+
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+
+    // Verify that useField was called with validate: undefined
+    const useFieldCalls = useFieldSpy.mock.calls
+    const relevantCall = useFieldCalls.find(call => call[0] === 'names')
+    expect(relevantCall).toBeDefined()
+    expect(relevantCall![1].validate).toBeUndefined()
+    
+    useFieldSpy.mockRestore()
+  })
+
+  it('should call validator when validate prop is provided', () => {
+    const fieldValidate = jest.fn(() => undefined)
+    const fieldArraySpy = jest.fn()
+    
+    const MyFieldArray = () => {
+      const fieldArray = useFieldArray('names', { validate: fieldValidate })
+      fieldArraySpy(fieldArray)
+      return null
+    }
+
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+
+    // Field validation should be called on initial render
+    expect(fieldValidate).toHaveBeenCalled()
+    const initialCalls = fieldValidate.mock.calls.length
+
+    // Get the last call before mutations
+    const lastCallBeforeMutations = fieldArraySpy.mock.calls.length - 1
+    
+    // Push an item to trigger validation again
+    act(() => fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice'))
+
+    // Field validation should be called again after mutation
+    expect(fieldValidate.mock.calls.length).toBeGreaterThan(initialCalls)
   })
 })
