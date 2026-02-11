@@ -3,7 +3,7 @@ import { act, render, cleanup } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
-import { Form } from 'react-final-form'
+import { Form, useField } from 'react-final-form'
 import useFieldArray from './useFieldArray'
 
 const onSubmitMock = (values: any) => {}
@@ -66,11 +66,10 @@ describe('FieldArray', () => {
     // This prevents final-form from tracking this field as having a validator,
     // which would trigger unnecessary form-wide validation.
     
-    const fieldArraySpy = jest.fn()
+    const useFieldSpy = jest.spyOn(require('react-final-form'), 'useField')
     
     const MyFieldArray = () => {
       const fieldArray = useFieldArray('names')
-      fieldArraySpy(fieldArray)
       return null
     }
 
@@ -88,16 +87,13 @@ describe('FieldArray', () => {
       </Form>
     )
 
-    // Get the last call before mutations
-    const lastCallBeforeMutations = fieldArraySpy.mock.calls.length - 1
+    // Verify that useField was called with validate: undefined
+    const useFieldCalls = useFieldSpy.mock.calls
+    const relevantCall = useFieldCalls.find(call => call[0] === 'names')
+    expect(relevantCall).toBeDefined()
+    expect(relevantCall![1].validate).toBeUndefined()
     
-    // Push items to array - these should not cause validation issues
-    act(() => fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice'))
-    act(() => fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('bob'))
-    
-    // Verify the items were added
-    const lastCall = fieldArraySpy.mock.calls[fieldArraySpy.mock.calls.length - 1]
-    expect(lastCall[0].fields.length).toBe(2)
+    useFieldSpy.mockRestore()
   })
 
   it('should call validator when validate prop is provided', () => {

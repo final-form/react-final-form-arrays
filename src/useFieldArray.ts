@@ -40,7 +40,7 @@ const useFieldArray = (
     }, {} as Record<string, Function>
     ), [name, formMutators])
 
-  const validate: FieldValidator = useConstant(() =>
+  const validate: FieldValidator | undefined = useConstant(() =>
     !validateProp
       ? undefined
       : (value: any, allValues: any, meta: any) => {
