@@ -61,7 +61,7 @@ jobs:
         with:
           node-version: "22"
       - name: Prepare env
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-scripts
       - name: Build
         run: yarn start build
       - name: Check bundle size
