@@ -42,7 +42,7 @@
     "@babel/preset-react": "^7.27.1",
     "@babel/preset-typescript": "^7.27.1",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@size-limit/preset-small-lib": "^11.1.6",
+    "@size-limit/preset-small-lib": "^12.0.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -84,7 +84,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-uglify": "^6.0.4",
-    "size-limit": "^11.1.6",
+    "size-limit": "^12.0.0",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
@@ -106,20 +106,6 @@
       "git add"
     ]
   },
-  "bundlesize": [
-    {
-      "path": "dist/react-final-form-arrays.umd.min.js",
-      "threshold": "2kB"
-    },
-    {
-      "path": "dist/react-final-form-arrays.es.js",
-      "threshold": "3kB"
-    },
-    {
-      "path": "dist/react-final-form-arrays.cjs.js",
-      "threshold": "3kB"
-    }
-  ],
   "dependencies": {
     "@babel/runtime": "^7.19.4"
   },
@@ -127,19 +113,15 @@
   "size-limit": [
     {
       "path": "dist/react-final-form-arrays.umd.min.js",
-      "limit": "4kB"
-    },
-    {
-      "path": "dist/react-final-form-arrays.umd.js",
-      "limit": "4kB"
+      "limit": "2.5kB"
     },
     {
       "path": "dist/react-final-form-arrays.es.js",
-      "limit": "4kB"
+      "limit": "3kB"
     },
     {
       "path": "dist/react-final-form-arrays.cjs.js",
-      "limit": "4kB"
+      "limit": "3kB"
     }
   ]
 }
