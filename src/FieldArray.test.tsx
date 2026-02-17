@@ -1008,5 +1008,106 @@ describe('FieldArray', () => {
 
     // FieldArray should NOT re-render because `touched` is not in its default subscription
     expect(arrayRenderCount.mock.calls.length).toBe(renderCountAfterMount)
+  it('should preserve data property in field state after remove', async () => {
+    // Reproduces: https://github.com/final-form/react-final-form-arrays/issues/165
+    // form.getFieldState is corrupted after arrays.remove - data is lost for shifted fields
+    let formRef: any = null
+
+    const { getByText } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={{
+          ...arrayMutators,
+          setFieldData: ([name, data]: [string, any], state: any) => {
+            if (state.fields[name]) {
+              state.fields[name].data = data
+            }
+          }
+        }}
+        initialValues={{ customers: ['Alice', 'Bob'] }}
+      >
+        {({ form }) => {
+          formRef = form
+          return (
+            <form>
+              <FieldArray name="customers">
+                {({ fields }) =>
+                  fields.map((name, index) => (
+                    <div key={index}>
+                      <Field name={name} component="input" />
+                      <button
+                        type="button"
+                        onClick={() => fields.remove(index)}
+                      >
+                        Remove {index}
+                      </button>
+                    </div>
+                  ))
+                }
+              </FieldArray>
+            </form>
+          )
+        }}
+      </Form>
+    )
+
+    // Set data on both fields
+    act(() => {
+      formRef.mutators.setFieldData('customers[0]', { disabled: true })
+      formRef.mutators.setFieldData('customers[1]', { disabled: true })
+    })
+
+    // Remove element at index 0
+    act(() => {
+      fireEvent.click(getByText('Remove 0'))
+    })
+
+    // After removal, customers[1] becomes customers[0]
+    // Its data property must be preserved — not undefined or {}
+    const fieldState = formRef.getFieldState('customers[0]')
+    expect(fieldState).toBeDefined()
+    expect(fieldState!.data).toEqual({ disabled: true })
+  })
+
+  it('should return defined field state (not undefined) for shifted field immediately after remove', () => {
+    // Edge case: getFieldState should return the field state, not undefined,
+    // even when called synchronously after remove (before React re-renders).
+    // copyField sets lastFieldState: undefined to force re-notification,
+    // but getFieldState(name) returns field.lastFieldState — which would be undefined.
+    let formRef: any = null
+    let removeRef: any = null
+
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators}
+        initialValues={{ items: ['a', 'b'] }}
+      >
+        {({ form }) => {
+          formRef = form
+          return (
+            <form>
+              <FieldArray name="items">
+                {({ fields }) => {
+                  removeRef = fields.remove
+                  return fields.map((name, index) => (
+                    <Field key={index} name={name} component="input" />
+                  ))
+                }}
+              </FieldArray>
+            </form>
+          )
+        }}
+      </Form>
+    )
+
+    act(() => {
+      removeRef(0)
+    })
+
+    // After remove + React re-render cycle, getFieldState should be defined
+    const fieldState = formRef.getFieldState('items[0]')
+    expect(fieldState).toBeDefined()
+    expect(fieldState!.value).toBe('b')
   })
 })
