@@ -43,8 +43,9 @@ const useFieldArray = (
   const validate: FieldValidator | undefined = useConstant(() =>
     !validateProp
       ? undefined
-      : (value: any, allValues: any, meta: any) => {
-          const error = validateProp(value, allValues, meta)
+      : async (value: any, allValues: any, meta: any) => {
+          // Resolve promise from async validators before checking error type
+          const error = await Promise.resolve(validateProp(value, allValues, meta))
           if (!error || Array.isArray(error)) {
             return error
           } else {
