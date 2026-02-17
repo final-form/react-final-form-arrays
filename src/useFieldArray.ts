@@ -13,10 +13,16 @@ const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   return result
 }, {} as FieldSubscription)
 
+// Default subscription for FieldArray: only `length` and `value` are needed
+// for the array to function correctly. Subscribing to everything (the old default)
+// caused severe performance degradation with nested arrays (#119).
+// Users who need additional meta (e.g. error, touched) should pass subscription explicitly.
+const defaultSubscription: FieldSubscription = { length: true, value: true }
+
 const useFieldArray = (
   name: string,
   {
-    subscription = all,
+    subscription = defaultSubscription,
     defaultValue,
     initialValue,
     isEqual = defaultIsEqual,

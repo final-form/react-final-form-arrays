@@ -276,7 +276,7 @@ describe('FieldArray', () => {
       >
         {() => (
           <form>
-            <FieldArray name="foo" validate={validate}>
+            <FieldArray name="foo" validate={validate} subscription={{ length: true, value: true, valid: true, error: true }}>
               {renderArray}
             </FieldArray>
           </form>
@@ -965,5 +965,48 @@ describe('FieldArray', () => {
     expect('dirty' in metaSnapshot).toBe(true)
     expect('touched' in metaSnapshot).toBe(true)
     expect('valid' in metaSnapshot).toBe(true)
+  })
+
+  it('should not re-render FieldArray when unrelated form state changes (e.g. touched) (#119)', () => {
+    // https://github.com/final-form/react-final-form-arrays/issues/119
+    // The old default subscription was `all`, causing FieldArray to re-render on
+    // every form state change (touched, dirty, valid, etc.). The new default only
+    // subscribes to { length: true, value: true }, reducing re-renders significantly.
+    const arrayRenderCount = jest.fn()
+
+    const { getByTestId } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+        initialValues={{ items: ['a', 'b'], other: '' }}
+      >
+        {() => (
+          <form>
+            <FieldArray name="items">
+              {({ fields }) => {
+                arrayRenderCount()
+                return fields.map((item, i) => (
+                  <Field key={i} name={item} component="input" data-testid={`item-${i}`} />
+                ))
+              }}
+            </FieldArray>
+            {/* A completely separate field */}
+            <Field name="other" component="input" data-testid="other" />
+          </form>
+        )}
+      </Form>
+    )
+
+    const renderCountAfterMount = arrayRenderCount.mock.calls.length
+
+    // Focus/blur the unrelated field — this changes `touched` state but NOT the array
+    act(() => {
+      fireEvent.focus(getByTestId('other'))
+      fireEvent.blur(getByTestId('other'))
+    })
+
+    // FieldArray should NOT re-render because `touched` is not in its default subscription
+    expect(arrayRenderCount.mock.calls.length).toBe(renderCountAfterMount)
   })
 })
