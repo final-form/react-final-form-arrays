@@ -1008,6 +1008,8 @@ describe('FieldArray', () => {
 
     // FieldArray should NOT re-render because `touched` is not in its default subscription
     expect(arrayRenderCount.mock.calls.length).toBe(renderCountAfterMount)
+  })
+
   it('should preserve data property in field state after remove', async () => {
     // Reproduces: https://github.com/final-form/react-final-form-arrays/issues/165
     // form.getFieldState is corrupted after arrays.remove - data is lost for shifted fields
