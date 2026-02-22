@@ -15,16 +15,12 @@ describe('useFieldArray async validate regression #176', () => {
       return undefined
     })
 
-    const syncValidate = jest.fn((value: any[]) => {
-      return value && value.length < 2 ? 'Need at least 2 items' : undefined
-    })
-
     let formState: any
-    let fieldsState: any
 
-    const TestComponent = ({ validate }: { validate?: any }) => {
-      const { fields, meta } = useFieldArray('items', { validate })
-      fieldsState = { fields, meta }
+    const TestComponent = () => {
+      const { fields } = useFieldArray('items', { 
+        validate: asyncValidate 
+      })
       return (
         <div>
           {fields.map((name, index) => (
@@ -34,20 +30,17 @@ describe('useFieldArray async validate regression #176', () => {
       )
     }
 
-    const FormWrapper = ({ validate }: { validate?: any }) => (
+    render(
       <Form
         onSubmit={() => {}}
         mutators={arrayMutators}
         initialValues={{ items: ['a', 'b', 'c'] }}
         render={({ form }) => {
           formState = form.getState()
-          return <TestComponent validate={validate} />
+          return <TestComponent />
         }}
       />
     )
-
-    // Test with async validator
-    const { rerender } = render(<FormWrapper validate={asyncValidate} />)
     
     // Initial render - validator should be called
     await waitFor(() => {
@@ -69,16 +62,47 @@ describe('useFieldArray async validate regression #176', () => {
       }
     })
 
-    // Test with sync validator for comparison
-    rerender(<FormWrapper validate={syncValidate} />)
-    
-    await waitFor(() => {
-      expect(syncValidate).toHaveBeenCalled()
+    // Final state check - no errors (3 items, validate returns undefined)
+    expect(formState.errors?.items).toBeUndefined()
+  })
+
+  it('should handle sync validate without breaking', () => {
+    const syncValidate = jest.fn((value: any[]) => {
+      return value && value.length < 2 ? 'Need at least 2 items' : undefined
     })
 
+    let formState: any
+
+    const TestComponent = () => {
+      const { fields } = useFieldArray('items', { 
+        validate: syncValidate 
+      })
+      return (
+        <div>
+          {fields.map((name, index) => (
+            <div key={name}>Item {index}</div>
+          ))}
+        </div>
+      )
+    }
+
+    render(
+      <Form
+        onSubmit={() => {}}
+        mutators={arrayMutators}
+        initialValues={{ items: ['a', 'b', 'c'] }}
+        render={({ form }) => {
+          formState = form.getState()
+          return <TestComponent />
+        }}
+      />
+    )
+
+    // Sync validator should be called
+    expect(syncValidate).toHaveBeenCalled()
+
     // Sync errors should work normally
-    const syncError = formState.errors?.items
-    expect(syncError).toBeUndefined() // 3 items, so no error
+    expect(formState.errors?.items).toBeUndefined() // 3 items, so no error
   })
 
   it('should properly handle async validation errors', async () => {
