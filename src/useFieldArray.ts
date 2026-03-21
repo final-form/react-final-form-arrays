@@ -8,15 +8,16 @@ import defaultIsEqual from './defaultIsEqual'
 import useConstant from './useConstant'
 import copyPropertyDescriptors from './copyPropertyDescriptors'
 
-const all: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
-  result[key] = true
-  return result
-}, {} as FieldSubscription)
+// Default subscription for FieldArray: `length`, `value`, and `error` are included
+// so that array-level validation errors are surfaced without subscribing to everything.
+// The old default (`all`) caused severe performance degradation with nested arrays (#119).
+// Users who need additional meta (e.g. touched, dirty) should pass subscription explicitly.
+const defaultSubscription: FieldSubscription = { length: true, value: true, error: true }
 
 const useFieldArray = (
   name: string,
   {
-    subscription = all,
+    subscription = defaultSubscription,
     defaultValue,
     initialValue,
     isEqual = defaultIsEqual,
