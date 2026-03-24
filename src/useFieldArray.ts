@@ -43,9 +43,25 @@ const useFieldArray = (
   const validate: FieldValidator | undefined = useConstant(() =>
     !validateProp
       ? undefined
-      : async (value: any, allValues: any, meta: any) => {
-          // Resolve promise from async validators before checking error type
-          const error = await Promise.resolve(validateProp(value, allValues, meta))
+      : (value: any, allValues: any, meta: any) => {
+          const rawError = validateProp(value, allValues, meta)
+          
+          // If the validator returned a Promise, await it before processing
+          if (rawError && typeof rawError.then === 'function') {
+            return rawError.then((error: any) => {
+              if (!error || Array.isArray(error)) {
+                return error
+              } else {
+                const arrayError: any[] = []
+                // gross, but we have to set a string key on the array
+                ; (arrayError as any)[ARRAY_ERROR] = error
+                return arrayError
+              }
+            })
+          }
+          
+          // Synchronous validator - process immediately
+          const error = rawError
           if (!error || Array.isArray(error)) {
             return error
           } else {
