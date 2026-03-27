@@ -1,10 +1,11 @@
 import * as React from 'react'
-import { act, render, cleanup } from '@testing-library/react'
+import { act, render, cleanup, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
-import { Form, useField } from 'react-final-form'
+import { Form, useField, useFormState } from 'react-final-form'
 import useFieldArray from './useFieldArray'
+import { ARRAY_ERROR } from 'final-form'
 
 const onSubmitMock = (values: any) => {}
 
@@ -41,7 +42,11 @@ describe('FieldArray', () => {
       return null
     }
     render(
-      <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
         {() => (
           <form>
             <MyFieldArray />
@@ -65,9 +70,9 @@ describe('FieldArray', () => {
     // undefined is passed instead of a no-op function that always returns undefined.
     // This prevents final-form from tracking this field as having a validator,
     // which would trigger unnecessary form-wide validation.
-    
+
     const useFieldSpy = jest.spyOn(require('react-final-form'), 'useField')
-    
+
     const MyFieldArray = () => {
       const fieldArray = useFieldArray('names')
       return null
@@ -89,17 +94,17 @@ describe('FieldArray', () => {
 
     // Verify that useField was called with validate: undefined
     const useFieldCalls = useFieldSpy.mock.calls
-    const relevantCall = useFieldCalls.find(call => call[0] === 'names')
+    const relevantCall = useFieldCalls.find((call) => call[0] === 'names')
     expect(relevantCall).toBeDefined()
     expect(relevantCall![1].validate).toBeUndefined()
-    
+
     useFieldSpy.mockRestore()
   })
 
   it('should call validator when validate prop is provided', () => {
     const fieldValidate = jest.fn(() => undefined)
     const fieldArraySpy = jest.fn()
-    
+
     const MyFieldArray = () => {
       const fieldArray = useFieldArray('names', { validate: fieldValidate })
       fieldArraySpy(fieldArray)
@@ -126,11 +131,115 @@ describe('FieldArray', () => {
 
     // Get the last call before mutations
     const lastCallBeforeMutations = fieldArraySpy.mock.calls.length - 1
-    
+
     // Push an item to trigger validation again
-    act(() => fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice'))
+    act(() =>
+      fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice')
+    )
 
     // Field validation should be called again after mutation
     expect(fieldValidate.mock.calls.length).toBeGreaterThan(initialCalls)
+  })
+
+  it('should handle array errors', () => {
+    const spy = jest.fn()
+    const MyFieldArray = () => {
+      spy(useFieldArray('names', { validate: (values) => ['required'] }))
+      return null
+    }
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          error: ['required']
+        })
+      })
+    )
+  })
+
+  it('should handle string error', () => {
+    const spy = jest.fn()
+    const spyState = jest.fn()
+    const MyFieldArray = () => {
+      spy(useFieldArray('names', { validate: (values) => 'failed' }))
+      return null
+    }
+    const Debug = () => {
+      spyState(useFormState().errors)
+      return null
+    }
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
+        {() => (
+          <form>
+            <MyFieldArray />
+            <Debug />
+          </form>
+        )}
+      </Form>
+    )
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          error: 'failed'
+        })
+      })
+    )
+    const expected: any[] = []
+    ;(expected as any)[ARRAY_ERROR] = 'failed'
+
+    expect(spyState).toHaveBeenCalledWith({ names: expected })
+  })
+  it('should handle Promises errors', async () => {
+    const spy = jest.fn()
+    const MyFieldArray = () => {
+      spy(
+        useFieldArray('names', {
+          validate: (values) => Promise.resolve(['await fail'])
+        })
+      )
+      return null
+    }
+    render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
+        {() => (
+          <form>
+            <MyFieldArray />
+          </form>
+        )}
+      </Form>
+    )
+
+    waitFor(() =>
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          meta: expect.objectContaining({
+            error: ['await fail']
+          })
+        })
+      )
+    )
   })
 })
