@@ -45,7 +45,24 @@ const useFieldArray = (
     !validateProp
       ? undefined
       : (value: any, allValues: any, meta: any) => {
-          const error = validateProp(value, allValues, meta)
+          const rawError = validateProp(value, allValues, meta)
+          
+          // If the validator returned a Promise, await it before processing
+          if (rawError && typeof rawError.then === 'function') {
+            return rawError.then((error: any) => {
+              if (!error || Array.isArray(error)) {
+                return error
+              } else {
+                const arrayError: any[] = []
+                // gross, but we have to set a string key on the array
+                ; (arrayError as any)[ARRAY_ERROR] = error
+                return arrayError
+              }
+            })
+          }
+          
+          // Synchronous validator - process immediately
+          const error = rawError
           if (!error || Array.isArray(error)) {
             return error
           } else {
