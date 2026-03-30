@@ -146,7 +146,7 @@ describe('useFieldArray async validate regression #176', () => {
     // Error should be resolved, not a Promise
     await waitFor(() => {
       const error = formState.errors?.items
-      expect(formState.errors?.items).toBeDefined()
+      expect(error).toBeDefined()
       expect(Array.isArray(error)).toBe(true)
       const arrayError = (error as any)[ARRAY_ERROR]
       expect(arrayError).toBe('Need at least 5 items')
