@@ -5,9 +5,11 @@ import arrayMutators from 'final-form-arrays'
 import { useFieldArray } from '.'
 import { ARRAY_ERROR } from 'final-form'
 
+// Helper function for async delays
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 describe('useFieldArray async validate regression #176', () => {
   it('should await async validate and not store Promise as ARRAY_ERROR', async () => {
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
     
     const asyncValidate = jest.fn(async (value: any[]) => {
       await sleep(10)
@@ -51,11 +53,9 @@ describe('useFieldArray async validate regression #176', () => {
     await waitFor(() => {
       // The error should NOT be a Promise
       const error = formState.errors?.items
-      if (error) {
-        expect(error).not.toBeInstanceOf(Promise)
-      }
+      expect(error).not.toBeInstanceOf(Promise)
       
-      // Check ARRAY_ERROR specifically
+      // Check ARRAY_ERROR specifically if it's an array
       if (Array.isArray(error)) {
         const arrayError = (error as any)[ARRAY_ERROR]
         expect(arrayError).not.toBeInstanceOf(Promise)
@@ -106,8 +106,6 @@ describe('useFieldArray async validate regression #176', () => {
   })
 
   it('should properly handle async validation errors', async () => {
-    const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-    
     const asyncValidateWithError = jest.fn(async (value: any[]) => {
       await sleep(10)
       return value && value.length < 5 ? 'Need at least 5 items' : undefined
@@ -148,11 +146,11 @@ describe('useFieldArray async validate regression #176', () => {
     // Error should be resolved, not a Promise
     await waitFor(() => {
       const error = formState.errors?.items
-      if (Array.isArray(error)) {
-        const arrayError = (error as any)[ARRAY_ERROR]
-        expect(arrayError).toBe('Need at least 5 items')
-        expect(arrayError).not.toBeInstanceOf(Promise)
-      }
+      expect(formState.errors?.items).toBeDefined()
+      expect(Array.isArray(error)).toBe(true)
+      const arrayError = (error as any)[ARRAY_ERROR]
+      expect(arrayError).toBe('Need at least 5 items')
+      expect(arrayError).not.toBeInstanceOf(Promise)
     })
   })
 })
