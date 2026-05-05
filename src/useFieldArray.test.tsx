@@ -133,4 +133,204 @@ describe('FieldArray', () => {
     // Field validation should be called again after mutation
     expect(fieldValidate.mock.calls.length).toBeGreaterThan(initialCalls)
   })
+
+  describe('fields.keys — stable keys for React reconciliation (fix #116)', () => {
+    it('should provide stable keys when removing an item', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      // Push 3 items
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('bob'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('carol'))
+
+      const keysAfterPush = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterPush).toHaveLength(3)
+      expect(keysAfterPush[0]).toMatch(/^ff-key-/)
+      expect(keysAfterPush[1]).toMatch(/^ff-key-/)
+      expect(keysAfterPush[2]).toMatch(/^ff-key-/)
+
+      // Remove the middle item (index 1 = 'bob')
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.remove(1))
+
+      const keysAfterRemove = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterRemove).toHaveLength(2)
+      // First and last items should keep their original keys
+      expect(keysAfterRemove[0]).toBe(keysAfterPush[0])
+      expect(keysAfterRemove[1]).toBe(keysAfterPush[2])
+    })
+
+    it('should generate unique keys on push', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('a'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('b'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('c'))
+
+      const keys = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keys).toHaveLength(3)
+      // All keys should be unique
+      const uniqueKeys = new Set(keys)
+      expect(uniqueKeys.size).toBe(3)
+    })
+
+    it('should update keys correctly on swap', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('bob'))
+
+      const keysBeforeSwap = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      const key0 = keysBeforeSwap[0]
+      const key1 = keysBeforeSwap[1]
+
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.swap(0, 1))
+
+      const keysAfterSwap = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterSwap[0]).toBe(key1)
+      expect(keysAfterSwap[1]).toBe(key0)
+    })
+
+    it('should update keys correctly on move', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('bob'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('carol'))
+
+      const keysBeforeMove = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      const [k0, k1, k2] = keysBeforeMove
+
+      // Move item at index 0 to index 2
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.move(0, 2))
+
+      const keysAfterMove = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterMove[0]).toBe(k1)
+      expect(keysAfterMove[1]).toBe(k2)
+      expect(keysAfterMove[2]).toBe(k0)
+    })
+
+    it('should update keys correctly on pop and shift', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('bob'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('carol'))
+
+      const keysAfterPush = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      const [k0, k1, k2] = keysAfterPush
+
+      // Pop removes last item
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.pop())
+      const keysAfterPop = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterPop).toHaveLength(2)
+      expect(keysAfterPop[0]).toBe(k0)
+      expect(keysAfterPop[1]).toBe(k1)
+
+      // Shift removes first item
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.shift())
+      const keysAfterShift = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterShift).toHaveLength(1)
+      expect(keysAfterShift[0]).toBe(k1)
+    })
+
+    it('should add keys correctly on unshift and insert', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      const keysAfterFirstPush = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      const originalKey = keysAfterFirstPush[0]
+
+      // Unshift prepends a new item — existing item's key should be at index 1
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.unshift('zero'))
+      const keysAfterUnshift = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterUnshift).toHaveLength(2)
+      expect(keysAfterUnshift[1]).toBe(originalKey) // alice moved to index 1
+
+      // Insert at index 1 — existing keys should shift around it
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.insert(1, 'inserted'))
+      const keysAfterInsert = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfterInsert).toHaveLength(3)
+      expect(keysAfterInsert[2]).toBe(originalKey) // alice now at index 2
+      expect(keysAfterInsert[1]).toMatch(/^ff-key-/) // new key for inserted item
+      expect(keysAfterInsert[1]).not.toBe(originalKey) // different from alice's key
+    })
+  })
 })

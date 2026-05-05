@@ -26,6 +26,7 @@ export interface FieldArrayRenderProps {
   fields: {
     forEach: (iterator: (name: string, index: number) => void) => void
     insert: (index: number, value: any) => void
+    keys: string[]
     map: <T>(iterator: (name: string, index: number) => T) => T[]
     move: (from: number, to: number) => void
     name: string
