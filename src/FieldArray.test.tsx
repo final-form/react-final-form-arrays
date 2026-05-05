@@ -133,14 +133,10 @@ describe('FieldArray', () => {
 
     // Find calls after toggle
     const callsAfterToggle = renderArray.mock.calls.slice(2)
-    // strange intermediate state where name has changed but value has not
-    const catsCallWithOdie = callsAfterToggle.find(
-      (call) =>
-        call[0].fields.name === 'cats' && call[0].fields.value?.[0] === 'Odie'
-    )
-    expect(catsCallWithOdie).toBeDefined()
 
-    // all aligned now
+    // With the optimised subscription ({length, value, error} instead of 'all'),
+    // the stale intermediate render (name='cats', value=['Odie']) no longer occurs —
+    // the field re-registers cleanly with the correct value immediately.
     const catsCallWithGarfield = callsAfterToggle.find(
       (call) => call[0].fields.value?.[0] === 'Garfield'
     )

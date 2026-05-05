@@ -1,6 +1,6 @@
 {
   "name": "react-final-form-arrays",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "A component for rendering and editing arrays 🏁 React Final Form",
   "main": "dist/react-final-form-arrays.cjs.js",
   "jsnext:main": "dist/react-final-form-arrays.es.js",
@@ -62,8 +62,8 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "fast-check": "^4.1.1",
-    "final-form": "^5.0.0",
-    "final-form-arrays": "^4.0.0",
+    "final-form": "^5.0.1",
+    "final-form-arrays": "^4.0.1",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
@@ -76,7 +76,7 @@
     "raf": "^3.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-final-form": "^7.0.0",
+    "react-final-form": "^7.0.1",
     "rollup": "^4.41.1",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -88,10 +88,10 @@
     "typescript": "^5.8.3"
   },
   "peerDependencies": {
-    "final-form": "^5.0.0",
-    "final-form-arrays": "^4.0.0",
+    "final-form": "^5.0.1",
+    "final-form-arrays": "^4.0.1",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
-    "react-final-form": "^7.0.0"
+    "react-final-form": "^7.0.1"
   },
   "jest": {
     "testEnvironment": "jsdom",
