@@ -332,5 +332,72 @@ describe('FieldArray', () => {
       expect(keysAfterInsert[1]).toMatch(/^ff-key-/) // new key for inserted item
       expect(keysAfterInsert[1]).not.toBe(originalKey) // different from alice's key
     })
+
+    it('should ignore invalid mutator indexes without desyncing keys', () => {
+      const spy = jest.fn()
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+          {() => (
+            <form>
+              <MyFieldArray />
+            </form>
+          )}
+        </Form>
+      )
+
+      act(() => spy.mock.calls[0][0].fields.push('alice'))
+      act(() => spy.mock.calls[spy.mock.calls.length - 1][0].fields.push('bob'))
+
+      const before = spy.mock.calls[spy.mock.calls.length - 1][0].fields
+      const keysBefore = before.keys
+
+      act(() => before.insert(-1, 'bad'))
+      act(() => before.remove(-1))
+      act(() => before.move(0, 99))
+      act(() => before.swap(0, 99))
+
+      const after = spy.mock.calls[spy.mock.calls.length - 1][0].fields
+      expect(after.value).toEqual(['alice', 'bob'])
+      expect(after.keys).toEqual(keysBefore)
+    })
+
+    it('should regenerate keys after external non-tail array changes', () => {
+      const spy = jest.fn()
+      let formApi: any
+      const MyFieldArray = () => {
+        spy(useFieldArray('names'))
+        return null
+      }
+      render(
+        <Form
+          onSubmit={onSubmitMock}
+          mutators={arrayMutators as any}
+          initialValues={{ names: ['alice', 'bob'] }}
+          subscription={{}}
+        >
+          {({ form }) => {
+            formApi = form
+            return (
+              <form>
+                <MyFieldArray />
+              </form>
+            )
+          }}
+        </Form>
+      )
+
+      const keysBefore = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+
+      act(() => formApi.reset({ names: ['zero', 'alice', 'bob'] }))
+
+      const keysAfter = spy.mock.calls[spy.mock.calls.length - 1][0].fields.keys
+      expect(keysAfter).toHaveLength(3)
+      expect(keysAfter).not.toContain(keysBefore[0])
+      expect(keysAfter).not.toContain(keysBefore[1])
+    })
   })
 })

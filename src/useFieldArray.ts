@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react'
 import { useForm, useField } from 'react-final-form'
 import { fieldSubscriptionItems, ARRAY_ERROR } from 'final-form'
 import { Mutators } from 'final-form-arrays'
@@ -97,17 +97,16 @@ const useFieldArray = (
   const keyCounter = useRef(0)
   const keysRef = useRef<string[]>([])
 
-  // Sync keys array length with actual field array length.
-  // If external code adds items (e.g., initialValues), generate new keys for them.
+  // Sync keys array length with actual field array length. Wrapped mutators update
+  // keysRef before the form value changes, so a length mismatch here means the
+  // array was changed externally. We cannot know which indexes changed, so
+  // regenerate all keys rather than reusing keys for the wrong items.
   const currentLength = length || 0
-  if (keysRef.current.length < currentLength) {
-    // Items were added externally — generate stable keys for new items
-    while (keysRef.current.length < currentLength) {
-      keysRef.current.push(`ff-key-${keyCounter.current++}`)
-    }
-  } else if (keysRef.current.length > currentLength) {
-    // Items were removed externally — trim keys
-    keysRef.current = keysRef.current.slice(0, currentLength)
+  if (keysRef.current.length !== currentLength) {
+    keysRef.current = Array.from(
+      { length: currentLength },
+      () => `ff-key-${keyCounter.current++}`
+    )
   }
 
   // Wrap mutators to keep keysRef in sync with array mutations
@@ -129,6 +128,10 @@ const useFieldArray = (
   }
 
   const insert = (index: number, value: any) => {
+    const len = keysRef.current.length
+    if (!Number.isInteger(index) || index < 0 || index > len) {
+      return undefined
+    }
     const newKeys = [...keysRef.current]
     newKeys.splice(index, 0, `ff-key-${keyCounter.current++}`)
     keysRef.current = newKeys
@@ -136,6 +139,10 @@ const useFieldArray = (
   }
 
   const remove = (index: number) => {
+    const len = keysRef.current.length
+    if (!Number.isInteger(index) || index < 0 || index >= len) {
+      return undefined
+    }
     const newKeys = [...keysRef.current]
     newKeys.splice(index, 1)
     keysRef.current = newKeys
@@ -157,7 +164,7 @@ const useFieldArray = (
       from >= len ||
       to >= len
     ) {
-      return (mutators as any).move(from, to)
+      return undefined
     }
     const newKeys = [...keysRef.current]
     const [moved] = newKeys.splice(from, 1)
@@ -176,7 +183,7 @@ const useFieldArray = (
       indexA >= len ||
       indexB >= len
     ) {
-      return (mutators as any).swap(indexA, indexB)
+      return undefined
     }
     const newKeys = [...keysRef.current]
     ;[newKeys[indexA], newKeys[indexB]] = [newKeys[indexB], newKeys[indexA]]
