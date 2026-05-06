@@ -148,6 +148,17 @@ const useFieldArray = (
   }
 
   const move = (from: number, to: number) => {
+    const len = keysRef.current.length
+    if (
+      !Number.isInteger(from) ||
+      !Number.isInteger(to) ||
+      from < 0 ||
+      to < 0 ||
+      from >= len ||
+      to >= len
+    ) {
+      return (mutators as any).move(from, to)
+    }
     const newKeys = [...keysRef.current]
     const [moved] = newKeys.splice(from, 1)
     newKeys.splice(to, 0, moved)
@@ -156,6 +167,17 @@ const useFieldArray = (
   }
 
   const swap = (indexA: number, indexB: number) => {
+    const len = keysRef.current.length
+    if (
+      !Number.isInteger(indexA) ||
+      !Number.isInteger(indexB) ||
+      indexA < 0 ||
+      indexB < 0 ||
+      indexA >= len ||
+      indexB >= len
+    ) {
+      return (mutators as any).swap(indexA, indexB)
+    }
     const newKeys = [...keysRef.current]
     ;[newKeys[indexA], newKeys[indexB]] = [newKeys[indexB], newKeys[indexA]]
     keysRef.current = newKeys
