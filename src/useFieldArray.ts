@@ -14,6 +14,22 @@ import copyPropertyDescriptors from './copyPropertyDescriptors'
 // Users who need additional meta (e.g. touched, dirty) should pass subscription explicitly.
 const defaultSubscription: FieldSubscription = { length: true, value: true, error: true }
 
+const hasError = (error: any): boolean => {
+  if (error === undefined) {
+    return false
+  }
+  if (Array.isArray(error)) {
+    if ((error as any)[ARRAY_ERROR] !== undefined) {
+      return true
+    }
+    return error.some(hasError)
+  }
+  return true
+}
+
+const normalizeArrayError = (error: any): any =>
+  Array.isArray(error) && !hasError(error) ? undefined : error
+
 const useFieldArray = (
   name: string,
   {
@@ -51,7 +67,7 @@ const useFieldArray = (
           if (rawError && typeof rawError.then === 'function') {
             return rawError.then((error: any) => {
               if (!error || Array.isArray(error)) {
-                return error
+                return normalizeArrayError(error)
               } else {
                 const arrayError: any[] = []
                 // gross, but we have to set a string key on the array
@@ -64,7 +80,7 @@ const useFieldArray = (
           // Synchronous validator - process immediately
           const error = rawError
           if (!error || Array.isArray(error)) {
-            return error
+            return normalizeArrayError(error)
           } else {
             const arrayError: any[] = []
             // gross, but we have to set a string key on the array

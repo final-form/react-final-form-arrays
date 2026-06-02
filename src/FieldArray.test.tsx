@@ -297,6 +297,54 @@ describe('FieldArray', () => {
     expect(callAfterPush[0].meta.error).toBe('Too long')
   })
 
+  it('should not block field-level errors when array validation returns only undefined entries', () => {
+    const validateName = jest.fn((value) =>
+      value === 'bad' ? 'Name cannot be bad' : undefined
+    )
+
+    const { getByTestId } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+        initialValues={{ foo: [{ name: '' }] }}
+      >
+        {() => (
+          <form>
+            <FieldArray name="foo" validate={() => [undefined]}>
+              {({ fields }) =>
+                fields.map((name) => (
+                  <Field
+                    key={name}
+                    name={`${name}.name`}
+                    validate={validateName}
+                    subscription={{ error: true, value: true }}
+                  >
+                    {({ input, meta }) => (
+                      <div>
+                        <input data-testid={input.name} {...input} />
+                        {meta.error && (
+                          <span data-testid="field-error">{meta.error}</span>
+                        )}
+                      </div>
+                    )}
+                  </Field>
+                ))
+              }
+            </FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+
+    fireEvent.change(getByTestId('foo[0].name'), {
+      target: { value: 'bad' }
+    })
+
+    expect(validateName).toHaveBeenCalled()
+    expect(getByTestId('field-error')).toHaveTextContent('Name cannot be bad')
+  })
+
   it('should provide forEach', () => {
     const renderArray = jest.fn(() => <div />)
     render(
