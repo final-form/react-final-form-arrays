@@ -722,6 +722,54 @@ describe('FieldArray', () => {
     expect(queryByTestId('child')).not.toBe(null)
   })
 
+  it('should aggregate subscribed active and touched meta from array fields', () => {
+    const { getByTestId } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+        initialValues={{ names: ['Paul', 'George'] }}
+      >
+        {() => (
+          <form>
+            <FieldArray name="names" subscription={{ active: true, touched: true }}>
+              {({ fields, meta }) => (
+                <div>
+                  <div data-testid="arrayActive">
+                    {meta.active ? 'Active' : 'Inactive'}
+                  </div>
+                  <div data-testid="arrayTouched">
+                    {meta.touched ? 'Touched' : 'Untouched'}
+                  </div>
+                  {fields.map((field) => (
+                    <Field name={field} key={field}>
+                      {({ input }) => (
+                        <input {...input} data-testid={`${field}.input`} />
+                      )}
+                    </Field>
+                  ))}
+                </div>
+              )}
+            </FieldArray>
+          </form>
+        )}
+      </Form>
+    )
+
+    expect(getByTestId('arrayActive')).toHaveTextContent('Inactive')
+    expect(getByTestId('arrayTouched')).toHaveTextContent('Untouched')
+
+    fireEvent.focus(getByTestId('names[0].input'))
+
+    expect(getByTestId('arrayActive')).toHaveTextContent('Active')
+    expect(getByTestId('arrayTouched')).toHaveTextContent('Untouched')
+
+    fireEvent.blur(getByTestId('names[0].input'))
+
+    expect(getByTestId('arrayActive')).toHaveTextContent('Inactive')
+    expect(getByTestId('arrayTouched')).toHaveTextContent('Touched')
+  })
+
   it('should provide default isEqual that does shallow compare of items', () => {
     const { getByTestId } = render(
       <Form
