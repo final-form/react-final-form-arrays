@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { act, render, cleanup } from '@testing-library/react'
+import { act, render, cleanup, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import arrayMutators from 'final-form-arrays'
 import { ErrorBoundary } from './testUtils'
@@ -41,7 +41,11 @@ describe('FieldArray', () => {
       return null
     }
     render(
-      <Form onSubmit={onSubmitMock} mutators={arrayMutators as any} subscription={{}}>
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        subscription={{}}
+      >
         {() => (
           <form>
             <MyFieldArray />
@@ -65,9 +69,9 @@ describe('FieldArray', () => {
     // undefined is passed instead of a no-op function that always returns undefined.
     // This prevents final-form from tracking this field as having a validator,
     // which would trigger unnecessary form-wide validation.
-    
+
     const useFieldSpy = jest.spyOn(require('react-final-form'), 'useField')
-    
+
     const MyFieldArray = () => {
       const fieldArray = useFieldArray('names')
       return null
@@ -89,17 +93,17 @@ describe('FieldArray', () => {
 
     // Verify that useField was called with validate: undefined
     const useFieldCalls = useFieldSpy.mock.calls
-    const relevantCall = useFieldCalls.find(call => call[0] === 'names')
+    const relevantCall = useFieldCalls.find((call) => call[0] === 'names')
     expect(relevantCall).toBeDefined()
     expect(relevantCall![1].validate).toBeUndefined()
-    
+
     useFieldSpy.mockRestore()
   })
 
   it('should call validator when validate prop is provided', () => {
     const fieldValidate = jest.fn(() => undefined)
     const fieldArraySpy = jest.fn()
-    
+
     const MyFieldArray = () => {
       const fieldArray = useFieldArray('names', { validate: fieldValidate })
       fieldArraySpy(fieldArray)
@@ -126,11 +130,59 @@ describe('FieldArray', () => {
 
     // Get the last call before mutations
     const lastCallBeforeMutations = fieldArraySpy.mock.calls.length - 1
-    
+
     // Push an item to trigger validation again
-    act(() => fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice'))
+    act(() =>
+      fieldArraySpy.mock.calls[lastCallBeforeMutations][0].fields.push('alice')
+    )
 
     // Field validation should be called again after mutation
     expect(fieldValidate.mock.calls.length).toBeGreaterThan(initialCalls)
+  })
+
+  it('should curry mutators with the latest field name when the name changes', () => {
+    const valuesSpy = jest.fn()
+
+    const NestedFieldArray = () => {
+      const [index, setIndex] = React.useState(0)
+      const fieldArray = useFieldArray(`outer[${index}].nested`)
+
+      return (
+        <>
+          <button type="button" onClick={() => setIndex(1)}>
+            select index 1
+          </button>
+          <button type="button" onClick={() => fieldArray.fields.push('added')}>
+            push nested value
+          </button>
+        </>
+      )
+    }
+
+    const { getByText } = render(
+      <Form
+        onSubmit={onSubmitMock}
+        mutators={arrayMutators as any}
+        initialValues={{ outer: [{ nested: [] }, { nested: [] }] }}
+        subscription={{ values: true }}
+      >
+        {({ values }) => {
+          valuesSpy(values)
+          return (
+            <form>
+              <NestedFieldArray />
+            </form>
+          )
+        }}
+      </Form>
+    )
+
+    fireEvent.click(getByText('select index 1'))
+    fireEvent.click(getByText('push nested value'))
+
+    const latestValues =
+      valuesSpy.mock.calls[valuesSpy.mock.calls.length - 1][0]
+    expect(latestValues.outer[0].nested).toEqual([])
+    expect(latestValues.outer[1].nested).toEqual(['added'])
   })
 })
